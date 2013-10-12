@@ -1,13 +1,168 @@
 <head>
-  <title>wbs-calculator</title>
+  <title>WBS Calculator: Main</title>
 </head>
 
 <body>
-  {{> hello}}
+	<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a class="brand" href="#">WBS Calculator</a>
+        <div class="nav-collapse collapse">
+          {{> navbar}}
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    {{> contentWrapper}}
+  </div>
 </body>
 
-<template name="hello">
-  <h1>Hello World!</h1>
-  {{greeting}}
-  <input type="button" value="Click" />
+<template name="navbar">
+  <ul class="nav">
+    <li id="navProject" {{isActive "selectProject"}}><a href="#">Project</a></li>
+    <li id="navInput" {{isActive "inputData"}}><a href="#">Input</a></li>
+    <li id="navReport" {{isActive "viewReport"}}><a href="#">Report</a></li>
+    <li id="navAnalysis" {{isActive "analysis"}}><a href="#">Analysis</a></li>
+  </ul>
+  <a class="brand">Project: {{curProject}}</a>
+</template>
+
+<template name="contentWrapper">
+  {{#if curPage "selectProject"}}
+    {{> selectProject}}
+  {{/if}}
+  {{#if curPage "inputData"}}
+    {{> inputData}}
+  {{/if}}
+</template>
+
+<template name="selectProject">
+  <h1>Select Project</h1>
+
+  <form class="form-inline" role="form">
+    <i class="icon-search"></i>
+    <input type="text" class="text" id="searchProjects" placeholder="Search"/>
+  </form>
+
+  <div class="btn-group btn-group-vertical">
+    {{#each projects}}
+      <button class="btn projectList" type="button">{{code}} - {{address}}</button>
+    {{/each}}
+  </div>
+
+  <input type="button" id="testButton" value="Debug (Remove all)"/>
+
+  <p><button id="confirmProject" class="btn btn-primary" type="button">Select Project</button></p>
+</template>
+
+<template name="inputData">
+  {{#with curProject}}
+    <h2>Project Details</h2>
+    <form class="form-horizontal">
+      <div class="control-group">
+        <label class="control-label" for="contractNumber">Contract Number</label>
+        <div class="controls">
+          <input type="text" id="contractNumber" value="{{code}}">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="buildingName">Building Name</label>
+        <div class="controls">
+          <input type="text" id="buildingName" value="{{buildingName}}">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="address">Address</label>
+        <div class="controls">
+          <input type="text" id="address" value="{{address}}">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="date">Date</label>
+        <div class="controls">
+          <input type="text" id="date" value="{{date}}">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="preparedBy">Prepared By</label>
+        <div class="controls">
+          <input type="text" id="preparedBy" value="{{prepBy}}">
+        </div>
+      </div>
+    </form>
+
+    <h2>Light Replacements</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Location></th>
+          <th>Type</th>
+          <th>QTY</th>
+          <th>Hours Per Year (0-8760)</th>
+          <th>Old Tube Type</th>
+          <th>Aircon</th>
+          <th>Sensor</th>
+          <th>New Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each lightList}}
+          <tr>
+            <td>{{location}}</td>
+            <td>{{type}}</td>
+            <td>{{qty}}</td>
+            <td>{{hours}}</td>
+            <td>{{tube}}</td>
+            <td>{{aircon}}</td>
+            <td>{{sensor}}</td>
+            <td>{{newType}}</td>
+          </tr>
+        {{/each}}
+        <tr id="addLightRow">
+          <td><input type="text" id="addLightLocation" class="input-small" placeholder="Location"></td>
+          <td>
+            <select id="addLightType">
+              <option value="" disabled selected>Type</option>
+              {{#each lightType}}
+                <option value="{{type}}">{{type}}</option>
+              {{/each}}
+            </select>
+          </td>
+          <td><input type="text" id="addLightQty" class="input-mini" placeholder="Quantity"></td>
+          <td><input type="text" id="addLightHours" class="input-mini" placeholder="Hours"></td>
+          <td>
+            <select id="addLightTube" class="select-med">
+              <option value="" disabled selected>Old Tube</option>
+              <option value="T8">T8</option>
+              <option value="T5">T5</option>
+              <option value="LED">LED</option>
+            </select>
+          </td>
+          <td>
+            <select id="addLightAircon" class="select-small">
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </td>
+          <td>
+            <select id="addLightSensor" class="select-small">
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </td>
+          <td>
+            <select id="addLightNew">
+              <option value="" disabled selected>New Type</option>
+              {{#each lightType}}
+                <option value="{{newType}}">{{newType}}</option>
+              {{/each}}
+            </select>
+          </td>
+          <td><button id="addLightBtn" class="btn btn-primary" type="button">Add</button></td>
+        </tr>
+      </tbody>
+    </table>
+  {{/with}}
 </template>
