@@ -45,6 +45,9 @@
   {{#if curPage "hiddenValues"}}
     {{> hiddenValues}}
   {{/if}}
+  {{#if curPage "lightInfo"}}
+    {{> lightInfo}}
+  {{/if}}
 </template>
 
 <template name="selectProject">
@@ -241,7 +244,17 @@
   {{/with}}
 </template>
 
+<template name="lightInfo">
+  <h2>Light Info</h2>
+</template>
+
 <template name="hiddenValues">
   <h2>ESCs</h2>
   <h2>Other Values</h2>
+  {{#with values}}
+    <p>ESCs: {{escPrice}}</p>
+    <p>Electricity price: {{elecPrice}}</p>
+    <p>Labour cost: {{labourCost}}</p>
+    <p>Sensor cost: {{sensorPrice}}</p>
+  {{/with}}
 </template>

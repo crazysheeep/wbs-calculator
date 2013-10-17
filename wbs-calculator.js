@@ -1,5 +1,6 @@
 Projects = new Meteor.Collection('projects');
 LightInfo = new Meteor.Collection('lightinfo');
+HiddenValues = new Meteor.Collection('hiddenvalues');
 
 if (Meteor.isClient) {
   Session.setDefault('curPage', 'selectProject'); //current page - project/input etc
@@ -154,6 +155,14 @@ if (Meteor.isClient) {
             escDiscount: escDiscount,
             netCost: netCost};
   };
+
+  Template.lightInfo.lights = function () {
+    return LightInfo.find();
+  };
+
+  Template.hiddenValues.values = function() {
+    return HiddenValues.findOne({});
+  };
 }
 
 if (Meteor.isServer) {
@@ -169,6 +178,9 @@ if (Meteor.isServer) {
       LightInfo.insert({type: 'EM236', price: '100.80', newType: 'EM36LED'});
       LightInfo.insert({type: 'EM218', price: '100.80', newType: 'EM18LED'});
       LightInfo.insert({type: '132', price: '100.80', newType: 'R15LED'});
+    }
+    if (HiddenValues.find().count() === 0) {
+      HiddenValues.insert({escPrice: 22.5, elecPrice: 22.5, labourCost: 45, sensorPrice: 50});
     }
 
     Meteor.methods({
