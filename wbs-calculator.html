@@ -72,38 +72,71 @@
 <template name="inputData">
   {{#with curProject}}
     <h2>Project Details</h2>
-    <form class="form-horizontal">
-      <div class="control-group">
-        <label class="control-label" for="contractNumber">Contract Number</label>
-        <div class="controls">
-          <input type="text" id="contractNumber" value="{{code}}">
-        </div>
+    <br>
+    <div class="row-fluid">
+      <div class="span6" style="padding-right:20px; border-right: 1px solid #ccc;">
+        <form class="form-horizontal">
+          <div class="control-group">
+            <label class="control-label" for="contractNumber">Contract Number</label>
+            <div class="controls">
+              <input type="text" id="contractNumber" value="{{code}}">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="buildingName">Building Name</label>
+            <div class="controls">
+              <input type="text" id="buildingName" value="{{buildingName}}">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="address">Address</label>
+            <div class="controls">
+              <input type="text" id="address" value="{{address}}">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="date">Date</label>
+            <div class="controls">
+              <input type="text" id="date" value="{{date}}">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="preparedBy">Prepared By</label>
+            <div class="controls">
+              <input type="text" id="preparedBy" value="{{prepBy}}">
+            </div>
+          </div>
+        </form>
       </div>
-      <div class="control-group">
-        <label class="control-label" for="buildingName">Building Name</label>
-        <div class="controls">
-          <input type="text" id="buildingName" value="{{buildingName}}">
-        </div>
+      <div class="span6">
+        <form class="form-horizontal">
+          <div class="control-group">
+            <label class="control-label" for="buildingManager">Building Manager</label>
+            <div class="controls">
+              <input type="text" id="buildingManager" value="??">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="buildingManagerAddress">Address</label>
+            <div class="controls">
+              <input type="text" id="buildingManagerAddress" value="??">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="buildingManagerNumber">Contact Number</label>
+            <div class="controls">
+              <input type="text" id="buildingManagerNumber" value="??">
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="buildingManagerEmail">Email</label>
+            <div class="controls">
+              <input type="text" id="buildingManagerEmail" value="??">
+            </div>
+          </div>
+        </form>
       </div>
-      <div class="control-group">
-        <label class="control-label" for="address">Address</label>
-        <div class="controls">
-          <input type="text" id="address" value="{{address}}">
-        </div>
-      </div>
-      <div class="control-group">
-        <label class="control-label" for="date">Date</label>
-        <div class="controls">
-          <input type="text" id="date" value="{{date}}">
-        </div>
-      </div>
-      <div class="control-group">
-        <label class="control-label" for="preparedBy">Prepared By</label>
-        <div class="controls">
-          <input type="text" id="preparedBy" value="{{prepBy}}">
-        </div>
-      </div>
-    </form>
+    </div>
 
     <h2>Light Replacements</h2>
     <table class="table">
