@@ -36,3 +36,8 @@ body {
 .select-large {
   width: 100px;
 }
+
+footer .container {
+  border-top: 1px solid darkgray;
+  height: 120px;
+}

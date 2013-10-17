@@ -17,6 +17,12 @@
   <div class="container">
     {{> contentWrapper}}
   </div>
+
+  <footer>
+    <div class="container">
+      <p>&copy; WBS Technology 2013</p>
+    </div>
+  </footer>
 </body>
 
 <template name="navbar">
@@ -25,7 +31,7 @@
     <li id="navInput" {{isActive "inputData"}}><a href="#">Input</a></li>
     <li id="navReport" {{isActive "viewReport"}}><a href="#">Report</a></li>
     <li id="navAnalysis" {{isActive "analysis"}}><a href="#">Analysis</a></li>
-    <li>|</li>
+    <li class="divider-vertical"></li>
     <li id="navLightInfo" {{isActive "lightInfo"}}><a href="#">Light Info</a></li>
     <li id="navHiddenValues" {{isActive "hiddenValues"}}><a href="#">Hidden Values</a></li>
   </ul>
