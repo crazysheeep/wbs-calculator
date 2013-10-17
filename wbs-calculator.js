@@ -76,17 +76,50 @@ if (Meteor.isClient) {
       var aircon = $('#addLightAircon').val();
       var sensor = $('#addLightSensor').val();
       var newType = $('#addLightNew').val();
-      window.alert(location+type+qty+hours+tube+aircon+sensor+newType);
-      Meteor.call('dbProjectsAddLight', this.code, location, type, qty, hours, 
-                                        tube, aircon, sensor, newType);
-      $('#addLightLocation').val('');
-      $('#addLightType').val('');
-      $('#addLightQty').val('');
-      $('#addLightHours').val('');
-      $('#addLightTube').val('');
-      $('#addLightAircon').val('');
-      $('#addLightSensor').val('');
-      $('#addLightNew').val('');
+      //window.alert(location+type+qty+hours+tube+aircon+sensor+newType);
+
+      var legal = true;
+      var errors = "";
+      var intRegex = /^\d+$/;
+      if (type === "") {
+        errors += "Type cannot be empty\n";
+        legal = false;
+      }
+      if (!intRegex.test(qty)) {
+        errors += "Quantity must be a positive integer\n";
+        legal = false;
+      }
+      if (intRegex.test(hours)) {
+        if (parseInt(hours, 10) > 8760) {
+          errors += "Hours must not exceed 8760\n";
+          legal = false;
+        }
+      } else {
+        errors += "Hours must be an integer between 0-8760\n";
+        legal = false;
+      }
+      if (tube === "") {
+        errors += "Tube type cannot be empty\n";
+        legal = false;
+      }
+      if (newType === "") {
+        errors += "New type cannot be empty\n";
+        legal = false;
+      }
+      if (legal) {
+        Meteor.call('dbProjectsAddLight', this.code, location, type, qty, hours, 
+                                          tube, aircon, sensor, newType);
+        $('#addLightLocation').val('');
+        $('#addLightType').val('');
+        $('#addLightQty').val('');
+        $('#addLightHours').val('');
+        $('#addLightTube').val('');
+        $('#addLightAircon').val('');
+        $('#addLightSensor').val('');
+        $('#addLightNew').val('');
+      } else {
+        window.alert(errors);
+      }
     }
   });
 }
