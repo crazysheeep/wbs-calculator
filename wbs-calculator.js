@@ -29,6 +29,12 @@ if (Meteor.isClient) {
     },
     'click #navAnalysis' : function () {
       Session.set('curPage', 'analysis');
+    },
+    'click #navLightInfo' : function () {
+      Session.set('curPage', 'lightInfo');
+    },
+    'click #navHiddenValues' : function () {
+      Session.set('curPage', 'hiddenValues');
     }
   });
 

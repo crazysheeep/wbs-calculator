@@ -25,8 +25,11 @@
     <li id="navInput" {{isActive "inputData"}}><a href="#">Input</a></li>
     <li id="navReport" {{isActive "viewReport"}}><a href="#">Report</a></li>
     <li id="navAnalysis" {{isActive "analysis"}}><a href="#">Analysis</a></li>
+    <li>|</li>
+    <li id="navLightInfo" {{isActive "lightInfo"}}><a href="#">Light Info</a></li>
+    <li id="navHiddenValues" {{isActive "hiddenValues"}}><a href="#">Hidden Values</a></li>
   </ul>
-  <a class="brand">Project: {{curProject}}</a>
+  <a id="curProject" class="brand">Project: {{curProject}}</a>
 </template>
 
 <template name="contentWrapper">
@@ -38,6 +41,9 @@
   {{/if}}
   {{#if curPage "viewReport"}}
     {{> viewReport}}
+  {{/if}}
+  {{#if curPage "hiddenValues"}}
+    {{> hiddenValues}}
   {{/if}}
 </template>
 
@@ -233,4 +239,9 @@
     <h2>Project Cost</h2>
 
   {{/with}}
+</template>
+
+<template name="hiddenValues">
+  <h2>ESCs</h2>
+  <h2>Other Values</h2>
 </template>

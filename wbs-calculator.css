@@ -4,6 +4,10 @@ body {
   padding-top: 70px;
 }
 
+#curProject {
+  float: right;
+}
+
 .projectList {
   width: 500px;
 }
