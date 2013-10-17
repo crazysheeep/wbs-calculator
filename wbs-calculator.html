@@ -143,7 +143,7 @@
             </td>
           </tr>
         {{/each}}
-        <tr id="addLightRow">
+        <tr class="addRow">
           <td><input type="text" id="addLightLocation" class="input-small" placeholder="Location"></td>
           <td>
             <select id="addLightType" class="select-large">
@@ -258,6 +258,49 @@
 
 <template name="lightInfo">
   <h2>Light Info</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>New Type</th>
+        <th>Description</th>
+        <td>Price</th>
+        <th>Watts</th>
+        <th>Change/Remove</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each lights}}
+        <tr class="{{selectedEdit}}">
+          <td>{{type}}</td>
+          <td>{{newType}}</td>
+          <td>{{description}}</td>
+          <td>{{price}}</td>
+          <td>{{watts}}</td>
+          <td>
+            {{#if selectedEdit}}
+              <button class="cancelEditLightInfoBtn btn btn-warning" type="button"><i class="icon-remove"></i></button>
+            {{else}}
+              <button class="editLightInfoBtn btn btn-info" type="button"><i class="icon-pencil"></i></button>
+            {{/if}}
+            <button class="removeLightInfoBtn btn btn-danger" type="button"><i class="icon-trash"></i></button>
+          </td>
+        </tr>
+      {{/each}}
+      <tr class="addRow">
+        <td><input type="text" id="addLightInfoType" class="input-med" placeholder="Type"></td>
+        <td><input type="text" id="addLightInfoNew" class="input-med" placeholder="New Type"></td>
+        <td><input type="text" id="addLightInfoDescription" class="input-large" placeholder="Description"></td>
+        <td><input type="text" id="addLightInfoPrice" class="input-mini" placeholder="Price"></td>    
+        <td><input type="text" id="addLightInfoWatts" class="input-mini" placeholder="Watts"></td>      
+        {{#if editing}}
+          <td><button id="addLightInfoBtn" class="btn btn-primary" type="button">Update</button></td>
+        {{else}}
+          <td><button id="addLightInfoBtn" class="btn btn-primary" type="button">Add</button></td>
+        {{/if}}
+      </tr>
+    </tbody>
+  </table>
 </template>
 
 <template name="hiddenValues">

@@ -7,6 +7,7 @@ if (Meteor.isClient) {
   Session.setDefault('selectedProject', ''); //Project selected in project page
   Session.setDefault('curProject', '');      //Project being worked on
   Session.setDefault('selectedEditInput', ''); //Item selected for editing on Input page
+  Session.setDefault('selectedEditInfo', ''); //Item selected for editing on Light Info page
 
   Template.navbar.isActive = function (page) {
     if (Session.equals('curPage', page)) {
@@ -83,6 +84,16 @@ if (Meteor.isClient) {
     return Session.get('selectedEditInput');
   };
   Template.inputData.events({
+    'change #addLightType' : function () {
+      var type = $('#addLightType').val();
+      var newType = LightInfo.findOne({type: type}).newType;
+      $('#addLightNew').val(newType);
+    },
+    'change #addLightNew' : function () {
+      var newType = $('#addLightNew').val();
+      var type = LightInfo.findOne({newType: newType}).type;
+      $('#addLightType').val(type);
+    },
     'click #addLightBtn' : function () {
       var location = $('#addLightLocation').val();
       var type = $('#addLightType').val();
@@ -197,6 +208,87 @@ if (Meteor.isClient) {
   Template.lightInfo.lights = function () {
     return LightInfo.find();
   };
+  Template.lightInfo.selectedEdit = function () {
+    if (Session.equals('selectedEditInfo', this.type)) {
+      return 'selectedEdit';
+    }
+  };
+  Template.lightInfo.editing = function () {
+    return Session.get('selectedEditInfo');
+  };
+  Template.lightInfo.events({
+    'click #addLightInfoBtn' : function () {
+      var type = $('#addLightInfoType').val();
+      var newType = $('#addLightInfoNew').val();
+      var description = $('#addLightInfoDescription').val();
+      var price = $('#addLightInfoPrice').val();
+      var watts = $('#addLightInfoWatts').val();
+      
+      //window.alert(type+newType+description+price+watts);
+
+      var legal = true;
+      var errors = "";
+      var intRegex = /^\d+$/;
+      var floatRegex = /^[0-9]+(?:\.[0-9]+)?$/;
+      //TODO type and newType cannot conflict with existing ones
+      if (type === "") {
+        errors += "Type cannot be empty\n";
+        legal = false;
+      }
+      if (newType === "") {
+        errors += "New type cannot be empty\n";
+        legal = false;
+      }
+      if (description === "") {
+        errors += "Description cannot be empty\n";
+        legal = false;
+      }
+      if (!floatRegex.test(price)) {
+        errors += "Price must be a positive decimal\n";
+        legal = false;
+      }
+      if (!intRegex.test(watts)) {
+        errors += "Watts must be a positive integer\n";
+        legal = false;
+      }
+      
+      if (legal) {
+        if (Session.get('selectedEditInfo')) {
+          Meteor.call('dbLightInfoEdit', Session.get('selectedEditInfo'),
+                                         description, price, watts);
+          Session.set('selectedEditInfo', '');
+        } else {
+          Meteor.call('dbLightInfoAdd', type, newType, description, price, watts);
+        }
+        $('#addLightInfoType').val('');
+        $('#addLightInfoNew').val('');
+        $('#addLightInfoDescription').val('');
+        $('#addLightInfoPrice').val('');
+        $('#addLightInfoWatts').val('');
+      } else {
+        window.alert(errors);
+      }
+    },
+    'click .removeLightInfoBtn' : function () {
+      Meteor.call('dbLightInfoRemove', this.type);
+    },
+    'click .editLightInfoBtn' : function () {
+      Session.set('selectedEditInfo', this.type);
+      $('#addLightInfoType').val(this.type);
+      $('#addLightInfoNew').val(this.newType);
+      $('#addLightInfoDescription').val(this.description);
+      $('#addLightInfoPrice').val(this.price);
+      $('#addLightInfoWatts').val(this.watts);
+    },
+    'click .cancelEditLightInfoBtn' : function () {
+      Session.set('selectedEditInfo', '');
+      $('#addLightInfoType').val('');
+      $('#addLightInfoNew').val('');
+      $('#addLightInfoDescription').val('');
+      $('#addLightInfoPrice').val('');
+      $('#addLightInfoWatts').val('');
+    }
+  });
 
   Template.hiddenValues.values = function() {
     return HiddenValues.findOne({});
@@ -254,6 +346,23 @@ if (Meteor.isServer) {
       },
       dbProjectsRemoveLight: function (code, index) {
         Projects.update({code: code}, {$pull: {lightList: {index: index}}});
+      },
+
+      dbLightInfoAdd: function (type, newType, description, price, watts) {
+        LightInfo.insert({type: type,
+                          newType: newType,
+                          description: description,
+                          price: price,
+                          watts: watts});
+      },
+      dbLightInfoEdit: function (type, description, price, watts) {
+        LightInfo.update({type: type},
+                        {$set: {description: description,
+                                price: price,
+                                watts: watts}});
+      },
+      dbLightInfoRemove: function (type) {
+        LightInfo.remove({type: type});
       }
     });
   });
