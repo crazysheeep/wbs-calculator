@@ -3,16 +3,7 @@
 </head>
 
 <body>
-	<div class="navbar navbar-inverse navbar-fixed-top">
-    <div class="navbar-inner">
-      <div class="container">
-        <a class="brand" href="#">WBS Calculator</a>
-        <div class="nav-collapse collapse">
-          {{> navbar}}
-        </div><!--/.nav-collapse -->
-      </div>
-    </div>
-  </div>
+	{{> navbar}}
 
   <div class="container">
     {{> contentWrapper}}
@@ -26,16 +17,26 @@
 </body>
 
 <template name="navbar">
-  <ul class="nav">
-    <li id="navProject" {{isActive "selectProject"}}><a href="#">Project</a></li>
-    <li id="navInput" {{isActive "inputData"}}><a href="#">Input</a></li>
-    <li id="navReport" {{isActive "viewReport"}}><a href="#">Report</a></li>
-    <li id="navAnalysis" {{isActive "analysis"}}><a href="#">Analysis</a></li>
-    <li class="divider-vertical"></li>
-    <li id="navLightInfo" {{isActive "lightInfo"}}><a href="#">Light Info</a></li>
-    <li id="navHiddenValues" {{isActive "hiddenValues"}}><a href="#">Hidden Values</a></li>
-  </ul>
-  <a id="curProject" class="brand">Project: {{curProject}}</a>
+  <div class="navbar {{theme}} navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <a id="logo" class="brand" href="#">WBS Calculator</a>
+        <div class="nav-collapse collapse">
+          <ul class="nav">
+            <li id="navProject" {{isActive "selectProject"}}><a href="#">Project</a></li>
+            <li id="navInput" {{isActive "inputData"}}><a href="#">Input</a></li>
+            <li id="navReport" {{isActive "viewReport"}}><a href="#">Report</a></li>
+            <li id="navAnalysis" {{isActive "analysis"}}><a href="#">Analysis</a></li>
+            <li class="divider-vertical"></li>
+            <li id="navLightInfo" {{isActive "lightInfo"}}><a href="#">Light Info</a></li>
+            <li id="navHiddenValues" {{isActive "hiddenValues"}}><a href="#">Hidden Values</a></li>
+          </ul>
+          <a id="curProject" class="brand">Project: {{curProject}}</a>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+  </div>
+  
 </template>
 
 <template name="contentWrapper">

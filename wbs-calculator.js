@@ -3,6 +3,7 @@ LightInfo = new Meteor.Collection('lightinfo');
 HiddenValues = new Meteor.Collection('hiddenvalues');
 
 if (Meteor.isClient) {
+  Session.setDefault('theme', 'dark'); // dark theme by default
   Session.setDefault('curPage', 'selectProject'); //current page - project/input etc
   Session.setDefault('selectedProject', ''); //Project selected in project page
   Session.setDefault('curProject', '');      //Project being worked on
@@ -10,6 +11,11 @@ if (Meteor.isClient) {
   Session.setDefault('selectedEditInfo', ''); //Item selected for editing on Light Info page
   Session.setDefault('saveDisabled', true); //Input page, disabled by default
 
+  Template.navbar.theme = function () {
+    if (Session.equals('theme', 'dark')) {
+      return "navbar-inverse";
+    }
+  };
   Template.navbar.isActive = function (page) {
     if (Session.equals('curPage', page)) {
       return 'class=active';
@@ -22,6 +28,13 @@ if (Meteor.isClient) {
     return Session.get('curProject');
   };
   Template.navbar.events({
+    'click #logo' : function () {
+      if (Session.equals('theme', 'light')) {
+        Session.set('theme', 'dark');
+      } else if (Session.equals('theme', 'dark')) {
+        Session.set('theme', 'light');
+      }
+    },
     'click #navProject' : function () {
       Session.set('curPage', 'selectProject');
     },
@@ -128,12 +141,6 @@ if (Meteor.isClient) {
       var type = $('#addLightType').val();
       var newType = LightInfo.findOne({type: type}).newType;
       $('#addLightNew').val(newType);
-      $('#addLightDescription').val(LightInfo.findOne({type: type}).description);
-    },
-    'change #addLightNew' : function () {
-      var newType = $('#addLightNew').val();
-      var type = LightInfo.findOne({newType: newType}).type;
-      $('#addLightType').val(type);
       $('#addLightDescription').val(LightInfo.findOne({type: type}).description);
     },
     'click #addLightBtn' : function () {
