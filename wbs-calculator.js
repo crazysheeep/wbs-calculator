@@ -230,7 +230,8 @@ if (Meteor.isClient) {
       var errors = "";
       var intRegex = /^\d+$/;
       var floatRegex = /^[0-9]+(?:\.[0-9]+)?$/;
-      //TODO type and newType cannot conflict with existing ones
+      var lightInfo = LightInfo.find();
+      
       if (type === "") {
         errors += "Type cannot be empty\n";
         legal = false;
@@ -239,6 +240,18 @@ if (Meteor.isClient) {
         errors += "New type cannot be empty\n";
         legal = false;
       }
+      // Make sure type and newType don't conflict with existing entires
+      LightInfo.find().forEach (function (curLight) {
+        console.log("Comparing "+type+" and "+curLight.type);
+        if (type == curLight.type) {
+          errors += "Cannot have two entries of same type "+type+"\n";
+          legal = false;
+        }
+        if (newType == curLight.newType) {
+          errors += "Cannot have two entries of same newType "+newType+"\n";
+          legal = false;
+        }
+      });
       if (description === "") {
         errors += "Description cannot be empty\n";
         legal = false;
