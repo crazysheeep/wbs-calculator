@@ -16,6 +16,20 @@ body {
   background-color: gray;
 }
 
+.selectedEdit {
+  background-color: cyan;
+}
+
+.editLightBtn {
+  float: left;
+}
+.cancelEditLightBtn {
+  float: left;
+}
+.removeLightBtn {
+  float: right;
+}
+
 .select-small {
   width: 70px;
 }

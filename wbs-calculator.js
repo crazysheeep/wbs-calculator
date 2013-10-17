@@ -6,6 +6,7 @@ if (Meteor.isClient) {
   Session.setDefault('curPage', 'selectProject'); //current page - project/input etc
   Session.setDefault('selectedProject', ''); //Project selected in project page
   Session.setDefault('curProject', '');      //Project being worked on
+  Session.setDefault('selectedEditInput', ''); //Item selected for editing on Input page
 
   Template.navbar.isActive = function (page) {
     if (Session.equals('curPage', page)) {
@@ -72,7 +73,15 @@ if (Meteor.isClient) {
   };
   Template.inputData.lightType = function () {
     return LightInfo.find();
-  }
+  };
+  Template.inputData.selectedEdit = function () {
+    if (Session.equals('selectedEditInput', this.index)) {
+      return 'selectedEdit';
+    }
+  };
+  Template.inputData.editing = function () {
+    return Session.get('selectedEditInput');
+  };
   Template.inputData.events({
     'click #addLightBtn' : function () {
       var location = $('#addLightLocation').val();
@@ -114,8 +123,15 @@ if (Meteor.isClient) {
         legal = false;
       }
       if (legal) {
-        Meteor.call('dbProjectsAddLight', this.code, location, type, qty, hours, 
-                                          tube, aircon, sensor, newType);
+        if (Session.get('selectedEditInput')) {
+          Meteor.call('dbProjectsEditLight', this.code, Session.get('selectedEditInput'),
+                                            location, type, qty, hours, 
+                                            tube, aircon, sensor, newType);
+          Session.set('selectedEditInput', '');
+        } else {
+          Meteor.call('dbProjectsAddLight', this.code, location, type, qty, hours, 
+                                            tube, aircon, sensor, newType);
+        }
         $('#addLightLocation').val('');
         $('#addLightType').val('');
         $('#addLightQty').val('');
@@ -129,8 +145,29 @@ if (Meteor.isClient) {
       }
     },
     'click .removeLightBtn' : function () {
-      console.log("Trying to remove light with index: "+this.index);
       Meteor.call('dbProjectsRemoveLight', Session.get('curProject'), this.index);
+    },
+    'click .editLightBtn' : function () {
+      Session.set('selectedEditInput', this.index);
+      $('#addLightLocation').val(this.location);
+      $('#addLightType').val(this.type);
+      $('#addLightQty').val(this.qty);
+      $('#addLightHours').val(this.hours);
+      $('#addLightTube').val(this.tube);
+      $('#addLightAircon').val(this.aircon);
+      $('#addLightSensor').val(this.sensor);
+      $('#addLightNew').val(this.newType);
+    },
+    'click .cancelEditLightBtn' : function () {
+      Session.set('selectedEditInput', '');
+      $('#addLightLocation').val('');
+      $('#addLightType').val('');
+      $('#addLightQty').val('');
+      $('#addLightHours').val('');
+      $('#addLightTube').val('');
+      $('#addLightAircon').val('');
+      $('#addLightSensor').val('');
+      $('#addLightNew').val('');
     }
   });
   
@@ -138,6 +175,7 @@ if (Meteor.isClient) {
     return Projects.findOne({code: Session.get('curProject')});
   };
   Template.viewReport.calculatedStats = function () {
+    var values = HiddenValues.findOne({});
     var elecSaving = 0;
     var projCost = 0;
     var escDiscount = 0;
@@ -146,7 +184,7 @@ if (Meteor.isClient) {
       curLightInfo = LightInfo.findOne({type: curLight.type});
       console.log("Finding type in LightInfo: "+curLight.type);
       projCost += curLight.qty * curLightInfo.price;
-      projCost += curLight.qty * 45;
+      projCost += curLight.qty * values.labourCost;
       netCost += curLight.qty * curLightInfo.price;
     });
 
@@ -193,15 +231,26 @@ if (Meteor.isServer) {
       dbProjectsAddLight: function (code, location, type, qty, hours, tube, aircon, sensor, newType) {
         var index = Math.floor((Math.random()*1000)+1)
         Projects.update({code: code},
-                         {$push: {lightList: {index: index,
-                                              location: location,
-                                              type: type,
-                                              qty: qty,
-                                              hours: hours,
-                                              tube: tube,
-                                              aircon: aircon,
-                                              sensor: sensor,
-                                              newType: newType}}});
+                        {$push: {lightList: {index: index,
+                                             location: location,
+                                             type: type,
+                                             qty: qty,
+                                             hours: hours,
+                                             tube: tube,
+                                             aircon: aircon,
+                                             sensor: sensor,
+                                             newType: newType}}});
+      },
+      dbProjectsEditLight: function (code, index, location, type, qty, hours, tube, aircon, sensor, newType) {
+        Projects.update({code: code, "lightList.index": index},
+                        {$set: {"lightList.$.location": location,
+                                "lightList.$.type": type,
+                                "lightList.$.qty": qty,
+                                "lightList.$.hours": hours,
+                                "lightList.$.tube": tube,
+                                "lightList.$.aircon": aircon,
+                                "lightList.$.sensor": sensor,
+                                "lightList.$.newType": newType}});
       },
       dbProjectsRemoveLight: function (code, index) {
         Projects.update({code: code}, {$pull: {lightList: {index: index}}});

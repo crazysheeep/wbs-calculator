@@ -118,11 +118,12 @@
           <th>Aircon</th>
           <th>Sensor</th>
           <th>New Type</th>
+          <th>Change/Remove</th>
         </tr>
       </thead>
       <tbody>
         {{#each lightList}}
-          <tr>
+          <tr class="{{selectedEdit}}">
             <td>{{location}}</td>
             <td>{{type}}</td>
             <td>{{description}}</td>
@@ -132,7 +133,14 @@
             <td>{{aircon}}</td>
             <td>{{sensor}}</td>
             <td>{{newType}}</td>
-            <td><button class="removeLightBtn btn btn-danger" type="button"><i class="icon-trash"></i></button></td>
+            <td>
+              {{#if selectedEdit}}
+                <button class="cancelEditLightBtn btn btn-warning" type="button"><i class="icon-remove"></i></button>
+              {{else}}
+                <button class="editLightBtn btn btn-info" type="button"><i class="icon-pencil"></i></button>
+              {{/if}}
+              <button class="removeLightBtn btn btn-danger" type="button"><i class="icon-trash"></i></button>
+            </td>
           </tr>
         {{/each}}
         <tr id="addLightRow">
@@ -176,7 +184,11 @@
               {{/each}}
             </select>
           </td>
-          <td><button id="addLightBtn" class="btn btn-primary" type="button">Add</button></td>
+          {{#if editing}}
+            <td><button id="addLightBtn" class="btn btn-primary" type="button">Update</button></td>
+          {{else}}
+            <td><button id="addLightBtn" class="btn btn-primary" type="button">Add</button></td>
+          {{/if}}
         </tr>
       </tbody>
     </table>
