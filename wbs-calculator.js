@@ -122,6 +122,28 @@ if (Meteor.isClient) {
       }
     }
   });
+  
+  Template.viewReport.curProject = function () {
+    return Projects.findOne({code: Session.get('curProject')});
+  };
+  Template.viewReport.calculatedStats = function () {
+    var elecSaving = 0;
+    var projCost = 0;
+    var escDiscount = 0;
+    var netCost = 0;
+    this.lightList.forEach (function (curLight) {
+      curLightInfo = LightInfo.findOne({type: curLight.type});
+      console.log("Finding type in LightInfo: "+curLight.type);
+      projCost += curLight.qty * curLightInfo.price;
+      projCost += curLight.qty * 45;
+      netCost += curLight.qty * curLightInfo.price;
+    });
+
+    return {elecSaving: elecSaving,
+            projCost: projCost,
+            escDiscount: escDiscount,
+            netCost: netCost};
+  };
 }
 
 if (Meteor.isServer) {
@@ -135,7 +157,7 @@ if (Meteor.isServer) {
     }
     if (LightInfo.find().count() === 0) {
       LightInfo.insert({type: 'EM236', price: '100.80', newType: 'EM36LED'});
-      LightInfo.insert({type: 'EM218', price: '100.80', newType: 'EM36LED'});
+      LightInfo.insert({type: 'EM218', price: '100.80', newType: 'EM18LED'});
       LightInfo.insert({type: '132', price: '100.80', newType: 'R15LED'});
     }
 

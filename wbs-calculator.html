@@ -36,6 +36,9 @@
   {{#if curPage "inputData"}}
     {{> inputData}}
   {{/if}}
+  {{#if curPage "viewReport"}}
+    {{> viewReport}}
+  {{/if}}
 </template>
 
 <template name="selectProject">
@@ -99,6 +102,7 @@
         <tr>
           <th>Location</th>
           <th>Type</th>
+          <th>Description</th>
           <th>QTY</th>
           <th>Hours Per Year (0-8760)</th>
           <th>Old Tube Type</th>
@@ -112,6 +116,7 @@
           <tr>
             <td>{{location}}</td>
             <td>{{type}}</td>
+            <td>{{description}}</td>
             <td>{{qty}}</td>
             <td>{{hours}}</td>
             <td>{{tube}}</td>
@@ -130,6 +135,7 @@
               {{/each}}
             </select>
           </td>
+          <td>TODO: Description</td>
           <td><input type="text" id="addLightQty" class="input-mini" placeholder="Quantity"></td>
           <td><input type="text" id="addLightHours" class="input-mini" placeholder="Hours"></td>
           <td>
@@ -162,6 +168,38 @@
           </td>
           <td><button id="addLightBtn" class="btn btn-primary" type="button">Add</button></td>
         </tr>
+      </tbody>
+    </table>
+  {{/with}}
+</template>
+
+<template name="viewReport">
+  {{#with curProject}}
+    <h2>Proposal Front Page</h2>
+    {{#with calculatedStats}}
+      <p>Electricity Saving per Year: {{elecSaving}}</p>
+      <p>Project Cost: {{projCost}}</p>
+      <p>ESCs Discount: {{escDiscount}}</p>
+      <p>Net Cost: {{netCost}}</p>
+    {{/with}}
+
+    <h2>Current Lighting Summary</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+          <th>QTY</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each lightList}}
+          <tr>
+            <td>{{type}}</td>
+            <td>{{description}}</td>
+            <td>{{qty}}</td>
+          </tr>
+        {{/each}}
       </tbody>
     </table>
   {{/with}}
