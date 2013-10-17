@@ -205,7 +205,9 @@ if (Meteor.isClient) {
       }
     },
     'click .removeLightBtn' : function () {
-      Meteor.call('dbProjectsRemoveLight', Session.get('curProject'), this.index);
+      if (confirm("Are you sure you want to delete this entry?")) {
+        Meteor.call('dbProjectsRemoveLight', Session.get('curProject'), this.index);
+      }
     },
     'click .editLightBtn' : function () {
       Session.set('selectedEditInput', this.index);
@@ -360,7 +362,9 @@ if (Meteor.isClient) {
       }
     },
     'click .removeLightInfoBtn' : function () {
-      Meteor.call('dbLightInfoRemove', this.type);
+      if (confirm("Are you sure you want to delete this entry?")) {
+        Meteor.call('dbLightInfoRemove', this.type);
+      }
     },
     'click .editLightInfoBtn' : function () {
       Session.set('selectedEditInfo', this.type);
