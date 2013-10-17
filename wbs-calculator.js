@@ -75,6 +75,9 @@ if (Meteor.isClient) {
   Template.inputData.lightType = function () {
     return LightInfo.find();
   };
+  Template.inputData.getDescription = function () {
+    return LightInfo.findOne({type: this.type}).description;
+  };
   Template.inputData.selectedEdit = function () {
     if (Session.equals('selectedEditInput', this.index)) {
       return 'selectedEdit';
@@ -88,11 +91,13 @@ if (Meteor.isClient) {
       var type = $('#addLightType').val();
       var newType = LightInfo.findOne({type: type}).newType;
       $('#addLightNew').val(newType);
+      $('#addLightDescription').val(LightInfo.findOne({type: type}).description);
     },
     'change #addLightNew' : function () {
       var newType = $('#addLightNew').val();
       var type = LightInfo.findOne({newType: newType}).type;
       $('#addLightType').val(type);
+      $('#addLightDescription').val(LightInfo.findOne({type: type}).description);
     },
     'click #addLightBtn' : function () {
       var location = $('#addLightLocation').val();
@@ -162,6 +167,7 @@ if (Meteor.isClient) {
       Session.set('selectedEditInput', this.index);
       $('#addLightLocation').val(this.location);
       $('#addLightType').val(this.type);
+      $('#addLightDescription').val(LightInfo.findOne({type: this.type}).description);
       $('#addLightQty').val(this.qty);
       $('#addLightHours').val(this.hours);
       $('#addLightTube').val(this.tube);
@@ -173,6 +179,7 @@ if (Meteor.isClient) {
       Session.set('selectedEditInput', '');
       $('#addLightLocation').val('');
       $('#addLightType').val('');
+      $('#addLightDescription').val('');
       $('#addLightQty').val('');
       $('#addLightHours').val('');
       $('#addLightTube').val('');
@@ -241,17 +248,19 @@ if (Meteor.isClient) {
         legal = false;
       }
       // Make sure type and newType don't conflict with existing entires
-      LightInfo.find().forEach (function (curLight) {
-        console.log("Comparing "+type+" and "+curLight.type);
-        if (type == curLight.type) {
-          errors += "Cannot have two entries of same type "+type+"\n";
-          legal = false;
-        }
-        if (newType == curLight.newType) {
-          errors += "Cannot have two entries of same newType "+newType+"\n";
-          legal = false;
-        }
-      });
+      if (!Session.get('selectedEditInfo')) {
+        LightInfo.find().forEach (function (curLight) {
+          console.log("Comparing "+type+" and "+curLight.type);
+          if (type == curLight.type) {
+            errors += "Cannot have two entries of same type "+type+"\n";
+            legal = false;
+          }
+          if (newType == curLight.newType) {
+            errors += "Cannot have two entries of same newType "+newType+"\n";
+            legal = false;
+          }
+        });
+      }
       if (description === "") {
         errors += "Description cannot be empty\n";
         legal = false;

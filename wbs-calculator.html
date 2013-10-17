@@ -126,7 +126,7 @@
           <tr class="{{selectedEdit}}">
             <td>{{location}}</td>
             <td>{{type}}</td>
-            <td>{{description}}</td>
+            <td>{{getDescription}}</td>
             <td>{{qty}}</td>
             <td>{{hours}}</td>
             <td>{{tube}}</td>
@@ -147,18 +147,18 @@
           <td><input type="text" id="addLightLocation" class="input-small" placeholder="Location"></td>
           <td>
             <select id="addLightType" class="select-large">
-              <option value="" disabled selected>Type</option>
+              <option value="" disabled selected></option>
               {{#each lightType}}
                 <option value="{{type}}">{{type}}</option>
               {{/each}}
             </select>
           </td>
-          <td>TODO: Description</td>
+          <td><input type="text" id="addLightDescription" class="input-med" disabled></td>
           <td><input type="text" id="addLightQty" class="input-mini" placeholder="Quantity"></td>
           <td><input type="text" id="addLightHours" class="input-mini" placeholder="Hours"></td>
           <td>
-            <select id="addLightTube" class="select-med">
-              <option value="" disabled selected>Old Tube</option>
+            <select id="addLightTube" class="select-small">
+              <option value="" disabled selected></option>
               <option value="T8">T8</option>
               <option value="T5">T5</option>
               <option value="LED">LED</option>
@@ -178,7 +178,7 @@
           </td>
           <td>
             <select id="addLightNew" class="select-large">
-              <option value="" disabled selected>New Type</option>
+              <option value="" disabled selected></option>
               {{#each lightType}}
                 <option value="{{newType}}">{{newType}}</option>
               {{/each}}
