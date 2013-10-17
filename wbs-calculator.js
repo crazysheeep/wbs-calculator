@@ -120,6 +120,10 @@ if (Meteor.isClient) {
       } else {
         window.alert(errors);
       }
+    },
+    'click .removeLightBtn' : function () {
+      console.log("Trying to remove light with index: "+this.index);
+      Meteor.call('dbProjectsRemoveLight', Session.get('curProject'), this.index);
     }
   });
   
@@ -169,8 +173,10 @@ if (Meteor.isServer) {
         //TODO
       },
       dbProjectsAddLight: function (code, location, type, qty, hours, tube, aircon, sensor, newType) {
+        var index = Math.floor((Math.random()*1000)+1)
         Projects.update({code: code},
-                         {$push: {lightList: {location: location,
+                         {$push: {lightList: {index: index,
+                                              location: location,
                                               type: type,
                                               qty: qty,
                                               hours: hours,
@@ -178,6 +184,9 @@ if (Meteor.isServer) {
                                               aircon: aircon,
                                               sensor: sensor,
                                               newType: newType}}});
+      },
+      dbProjectsRemoveLight: function (code, index) {
+        Projects.update({code: code}, {$pull: {lightList: {index: index}}});
       }
     });
   });

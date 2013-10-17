@@ -12,9 +12,12 @@ body {
   background-color: gray;
 }
 
+.select-small {
+  width: 70px;
+}
 .select-med {
   width: 100px;
 }
-.select-small {
-  width: 70px;
+.selec-large {
+  width: 150px;
 }

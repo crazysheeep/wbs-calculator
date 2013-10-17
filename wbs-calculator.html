@@ -123,12 +123,13 @@
             <td>{{aircon}}</td>
             <td>{{sensor}}</td>
             <td>{{newType}}</td>
+            <td><button class="removeLightBtn btn btn-danger" type="button"><i class="icon-trash"></i></button></td>
           </tr>
         {{/each}}
         <tr id="addLightRow">
           <td><input type="text" id="addLightLocation" class="input-small" placeholder="Location"></td>
           <td>
-            <select id="addLightType">
+            <select id="addLightType" class="select-large">
               <option value="" disabled selected>Type</option>
               {{#each lightType}}
                 <option value="{{type}}">{{type}}</option>
@@ -159,7 +160,7 @@
             </select>
           </td>
           <td>
-            <select id="addLightNew">
+            <select id="addLightNew" class="select-large">
               <option value="" disabled selected>New Type</option>
               {{#each lightType}}
                 <option value="{{newType}}">{{newType}}</option>
@@ -202,5 +203,34 @@
         {{/each}}
       </tbody>
     </table>
+
+    <h2>Light Energy Saving Comparison</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Before</th>
+          <th>After</th>
+          <th>Savings per year</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Electricity Usage per Year (kWh)</th>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <th>Electricity Bill per Year</th>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Project Cost</h2>
+
   {{/with}}
 </template>
