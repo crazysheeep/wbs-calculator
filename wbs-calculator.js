@@ -192,6 +192,9 @@ if (Meteor.isClient) {
   Template.viewReport.curProject = function () {
     return Projects.findOne({code: Session.get('curProject')});
   };
+  Template.viewReport.getDescription = function () {
+    return LightInfo.findOne({type: this.type}).description;
+  };
   Template.viewReport.calculatedStats = function () {
     var values = HiddenValues.findOne({});
     var elecSaving = 0;
