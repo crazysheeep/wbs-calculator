@@ -13,11 +13,19 @@ body {
 }
 
 .addRow {
-  background-color: darkgray;
+  background-color: lightgray;
+}
+.totalRow {
+  background-color: lightgray;
+  font-weight: bold;
 }
 
 .selectedEdit {
   background-color: cyan;
+}
+
+.center-align {
+  float: center;
 }
 
 .editLightBtn {

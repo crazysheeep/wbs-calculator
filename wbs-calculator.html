@@ -85,31 +85,31 @@
           <div class="control-group">
             <label class="control-label" for="contractNumber">Contract Number</label>
             <div class="controls">
-              <input type="text" id="contractNumber" value="{{code}}">
+              <input type="text" id="contractNumber" class="projectInfo" value="{{code}}">
             </div>
           </div>
           <div class="control-group">
             <label class="control-label" for="buildingName">Building Name</label>
             <div class="controls">
-              <input type="text" id="buildingName" value="{{buildingName}}">
+              <input type="text" id="buildingName" class="projectInfo" value="{{buildingName}}">
             </div>
           </div>
           <div class="control-group">
             <label class="control-label" for="address">Address</label>
             <div class="controls">
-              <input type="text" id="address" value="{{address}}">
+              <input type="text" id="address" class="projectInfo" value="{{address}}">
             </div>
           </div>
           <div class="control-group">
             <label class="control-label" for="date">Date</label>
             <div class="controls">
-              <input type="text" id="date" value="{{date}}">
+              <input type="text" id="date" class="projectInfo" value="{{date}}">
             </div>
           </div>
           <div class="control-group">
             <label class="control-label" for="preparedBy">Prepared By</label>
             <div class="controls">
-              <input type="text" id="preparedBy" value="{{prepBy}}">
+              <input type="text" id="preparedBy" class="projectInfo" value="{{prepBy}}">
             </div>
           </div>
         </form>
@@ -119,26 +119,30 @@
           <div class="control-group">
             <label class="control-label" for="buildingManager">Building Manager</label>
             <div class="controls">
-              <input type="text" id="buildingManager" value="??">
+              <input type="text" id="buildingManager" class="projectInfo" value="{{buildingManager}}">
             </div>
           </div>
           <div class="control-group">
             <label class="control-label" for="buildingManagerAddress">Address</label>
             <div class="controls">
-              <input type="text" id="buildingManagerAddress" value="??">
+              <input type="text" id="buildingManagerAddress" class="projectInfo" value="{{buildingManagerAddress}}">
             </div>
           </div>
           <div class="control-group">
             <label class="control-label" for="buildingManagerNumber">Contact Number</label>
             <div class="controls">
-              <input type="text" id="buildingManagerNumber" value="??">
+              <input type="text" id="buildingManagerNumber" class="projectInfo" value="{{buildingManagerNumber}}">
             </div>
           </div>
           <div class="control-group">
             <label class="control-label" for="buildingManagerEmail">Email</label>
             <div class="controls">
-              <input type="text" id="buildingManagerEmail" value="??">
+              <input type="text" id="buildingManagerEmail" class="projectInfo" value="{{buildingManagerEmail}}">
             </div>
+          </div>
+          <div class="center-align">
+            <button class="saveProjectBtn btn btn-primary" type="button" {{saveDisabled}}><i class="icon-ok"></i> Save Changes</button>
+            <button class="cancelProjectBtn btn btn-danger" type="button" {{saveDisabled}}><i class="icon-remove"></i> Discard Changes</button>
           </div>
         </form>
       </div>
@@ -236,15 +240,22 @@
 
 <template name="viewReport">
   {{#with curProject}}
-    <h2>Proposal Front Page</h2>
     {{#with calculatedStats}}
-      <p>Electricity Saving per Year: {{elecSaving}}</p>
-      <p>Project Cost: {{projCost}}</p>
-      <p>ESCs Discount: {{escDiscount}}</p>
-      <p>Net Cost: {{netCost}}</p>
+      <h3>Proposal Summary</h3>
+      <div class="row">
+        <div class="span3">
+        </div>
+        <div class="span9">
+            <p><strong>Electricity Saving per Year:</strong> ${{elecSaving}}</p>
+            <p><strong>Project Cost:</strong> ${{projCost}}</p>
+            <p><strong>ESCs Discount:</strong> ${{escDiscount}}</p>
+            <p><strong>Net Cost:</strong> ${{netCost}}</p>
+        </div>
+      </div>
     {{/with}}
+    <br>
 
-    <h2>Current Lighting Summary</h2>
+    <h3>Current Lighting Summary</h3>
     <table class="table">
       <thead>
         <tr>
@@ -263,35 +274,72 @@
         {{/each}}
       </tbody>
     </table>
+    <br>
 
-    <h2>Light Energy Saving Comparison</h2>
-    <table class="table">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Before</th>
-          <th>After</th>
-          <th>Savings per year</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th>Electricity Usage per Year (kWh)</th>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr>
-          <th>Electricity Bill per Year</th>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
-      </tbody>
-    </table>
+    {{#with calculatedStats}}
+      <h3>Light Energy Saving Comparison</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Before</th>
+            <th>After</th>
+            <th>Savings per year</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Electricity Usage per Year (kWh)</th>
+            <td>{{kwBefore}}</td>
+            <td>{{kwAfter}}</td>
+            <td>{{kwSaving}}</td>
+          </tr>
+          <tr>
+            <th>Electricity Bill per Year</th>
+            <td>${{elecBefore}}</td>
+            <td>${{elecAfter}}</td>
+            <td>${{elecSaving}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
 
-    <h2>Project Cost</h2>
-
+      <h3>Project Cost</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Total material costs(LED lights, sensors, receivers)</td>
+            <td>${{partsCost}}</td>
+          </tr>
+          <tr>
+            <td>Installation and labour costs</td>
+            <td>${{labourCost}}</td>
+          </tr>
+          <tr>
+            <td>NSW Government Incentives (ESCs)</td>
+            <td style="color: red;">-${{escDiscount}}</td>
+          </tr>
+          <tr>
+            <td>Net Cost</td>
+            <td>${{netCost}}</td>
+          </tr>
+          <tr>
+            <td>GST</td>
+            <td>${{GST}}</td>
+          </tr>
+          <tr class="totalRow">
+            <td>Total Cost</td>
+            <td>${{totalCost}}</td>
+          </tr>
+        </tbody>
+      </table>
+    {{/with}}
   {{/with}}
 </template>
 

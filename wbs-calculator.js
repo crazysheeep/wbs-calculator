@@ -8,6 +8,7 @@ if (Meteor.isClient) {
   Session.setDefault('curProject', '');      //Project being worked on
   Session.setDefault('selectedEditInput', ''); //Item selected for editing on Input page
   Session.setDefault('selectedEditInfo', ''); //Item selected for editing on Light Info page
+  Session.setDefault('saveDisabled', true); //Input page, disabled by default
 
   Template.navbar.isActive = function (page) {
     if (Session.equals('curPage', page)) {
@@ -68,6 +69,11 @@ if (Meteor.isClient) {
   Template.inputData.curProject = function () {
     return Projects.findOne({code: Session.get('curProject')});
   };
+  Template.inputData.saveDisabled = function () {
+    if (Session.equals('saveDisabled', true)) {
+      return "disabled";
+    }
+  };
   Template.inputData.lightList = function () {
     var projectDetails = Projects.findOne({code: this.code});
     return projectDetails.lightList;
@@ -87,6 +93,37 @@ if (Meteor.isClient) {
     return Session.get('selectedEditInput');
   };
   Template.inputData.events({
+    'keyup .projectInfo' : function () {
+      Session.set('saveDisabled', false);
+    },
+    'click .saveProjectBtn' : function () {
+      Session.set('saveDisabled', true);
+      // TODO sanity check, do not assume valid data
+      Session.set('curProject', $('#contractNumber').val());
+      // TODO write function
+      Meteor.call('dbProjectsEdit', $('#contractNumber').val(),
+                                    $('#buildingName').val(),
+                                    $('#address').val(),
+                                    $('#date').val(),
+                                    $('#preparedBy').val(),
+                                    $('#buildingManager').val(),
+                                    $('#buildingManagerAddress').val(),
+                                    $('#buildingManagerNumber').val(),
+                                    $('#buildingManagerEmail').val());
+    },
+    'click .cancelProjectBtn' : function () {
+      Session.set('saveDisabled', true);
+      projectData = Projects.findOne({code: this.code});
+      $('#contractNumber').val(projectData.code);
+      $('#buildingName').val(projectData.buildingName);
+      $('#address').val(projectData.address);
+      $('#date').val(projectData.date);
+      $('#preparedBy').val(projectData.prepBy);
+      $('#buildingManager').val(projectData.buildingManager);
+      $('#buildingManagerAddress').val(projectData.buildingManagerAddress);
+      $('#buildingManagerNumber').val(projectData.buildingManagerNumber);
+      $('#buildingManagerEmail').val(projectData.buildingManagerEmail);
+    },
     'change #addLightType' : function () {
       var type = $('#addLightType').val();
       var newType = LightInfo.findOne({type: type}).newType;
@@ -197,22 +234,43 @@ if (Meteor.isClient) {
   };
   Template.viewReport.calculatedStats = function () {
     var values = HiddenValues.findOne({});
-    var elecSaving = 0;
-    var projCost = 0;
+    var partsCost = 0;
+    var labourCost = 0;
     var escDiscount = 0;
-    var netCost = 0;
+
+    var kwBefore = 0;
     this.lightList.forEach (function (curLight) {
       curLightInfo = LightInfo.findOne({type: curLight.type});
-      console.log("Finding type in LightInfo: "+curLight.type);
-      projCost += curLight.qty * curLightInfo.price;
-      projCost += curLight.qty * values.labourCost;
-      netCost += curLight.qty * curLightInfo.price;
+      
+      partsCost += curLight.qty * curLightInfo.price;
+      labourCost += curLight.qty * values.labourCost;
+      //escDiscount += ?
+
+      kwBefore += curLight.qty * curLightInfo.watts * curLight.hours / 1000;
     });
 
-    return {elecSaving: elecSaving,
-            projCost: projCost,
-            escDiscount: escDiscount,
-            netCost: netCost};
+    var kwAfter = kwBefore * 0.2;
+    var elecBefore = kwBefore * values.elecPrice;
+    var elecAfter = elecBefore * 0.2;
+    var projCost = partsCost + labourCost;
+    var netCost = projCost - escDiscount;
+    var GST = netCost * 0.1;
+
+    return {netCost: netCost.toFixed(2),
+            GST: GST.toFixed(2),
+            labourCost: labourCost.toFixed(2),
+            partsCost: partsCost.toFixed(2),
+            projCost: projCost.toFixed(2),
+            escDiscount: escDiscount.toFixed(2),
+            totalCost: (netCost + GST).toFixed(2),
+            
+            kwBefore: kwBefore.toFixed(2),
+            kwAfter: kwAfter.toFixed(2),
+            kwSaving: (kwBefore - kwAfter).toFixed(2),
+
+            elecBefore: elecBefore.toFixed(2),
+            elecAfter: elecAfter.toFixed(2),
+            elecSaving: (elecBefore - elecAfter).toFixed(2)};
   };
 
   Template.lightInfo.lights = function () {
