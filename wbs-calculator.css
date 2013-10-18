@@ -4,6 +4,13 @@ body {
   padding-top: 70px;
 }
 
+.float-left {
+  float: left;
+}
+.float-right {
+  float: right;
+}
+
 #curProject {
   float: right;
 }
@@ -24,10 +31,6 @@ body {
   background-color: cyan;
 }
 
-.center-align {
-  float: center;
-}
-
 .editLightBtn {
   float: left;
 }
@@ -43,6 +46,20 @@ body {
 }
 .select-large {
   width: 100px;
+}
+
+#toTextReportInfo {
+  float: right;
+  padding-top: 15px;
+}
+#textReportInfo {
+  width: 100%;
+}
+#textReportInfo td {
+  padding-top: 15px;
+}
+.underline {
+  border-bottom: 1px solid gray;
 }
 
 footer .container {

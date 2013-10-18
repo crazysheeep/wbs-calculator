@@ -8,6 +8,7 @@ if (Meteor.isClient) {
   Session.setDefault('selectedProject', ''); //Project selected in project page
   Session.setDefault('curProject', '');      //Project being worked on
   Session.setDefault('selectedEditInput', ''); //Item selected for editing on Input page
+  Session.setDefault('reportType', 'table');
   Session.setDefault('selectedEditInfo', ''); //Item selected for editing on Light Info page
   Session.setDefault('saveDisabled', true); //Input page, disabled by default
 
@@ -235,6 +236,11 @@ if (Meteor.isClient) {
     }
   });
   
+  Template.viewReport.reportType = function (type) {
+    if (Session.equals('reportType', type)) {
+      return "active";
+    }
+  };
   Template.viewReport.curProject = function () {
     return Projects.findOne({code: Session.get('curProject')});
   };
@@ -265,22 +271,30 @@ if (Meteor.isClient) {
     var netCost = projCost - escDiscount;
     var GST = netCost * 0.1;
 
-    return {netCost: netCost.toFixed(2),
-            GST: GST.toFixed(2),
-            labourCost: labourCost.toFixed(2),
-            partsCost: partsCost.toFixed(2),
-            projCost: projCost.toFixed(2),
-            escDiscount: escDiscount.toFixed(2),
-            totalCost: (netCost + GST).toFixed(2),
+    return {netCost: netCost.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+            GST: GST.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+            labourCost: labourCost.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+            partsCost: partsCost.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+            projCost: projCost.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+            escDiscount: escDiscount.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+            totalCost: (netCost + GST).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
             
-            kwBefore: kwBefore.toFixed(2),
-            kwAfter: kwAfter.toFixed(2),
-            kwSaving: (kwBefore - kwAfter).toFixed(2),
+            kwBefore: kwBefore.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+            kwAfter: kwAfter.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+            kwSaving: (kwBefore - kwAfter).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
 
-            elecBefore: elecBefore.toFixed(2),
-            elecAfter: elecAfter.toFixed(2),
-            elecSaving: (elecBefore - elecAfter).toFixed(2)};
+            elecBefore: elecBefore.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+            elecAfter: elecAfter.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+            elecSaving: (elecBefore - elecAfter).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,")};
   };
+  Template.viewReport.events({
+    'click #reportTable' : function () {
+      Session.set('reportType', 'table');
+    },
+    'click #reportText' : function () {
+      Session.set('reportType', 'text');
+    }
+  });
 
   Template.lightInfo.lights = function () {
     return LightInfo.find();
@@ -413,6 +427,20 @@ if (Meteor.isServer) {
       },
       dbProjectsAdd: function (code) {
         //TODO
+      },
+      dbProjectsEdit: function (code, buildingName, address, date, prepBy,
+                                buildingManager, buildingManagerAddress, buildingManagerNumber, buildingManagerEmail) {
+        Projects.update({code: code},
+                        {$set: {code: code,
+                                buildingName: buildingName,
+                                address: address,
+                                date: date,
+                                prepBy: prepBy,
+                                buildingManager: buildingManager,
+                                buildingManagerAddress: buildingManagerAddress,
+                                buildingManagerNumber: buildingManagerNumber,
+                                buildingManagerEmail: buildingManagerEmail}});
+
       },
       dbProjectsAddLight: function (code, location, type, qty, hours, tube, aircon, sensor, newType) {
         var index = Math.floor((Math.random()*1000)+1)

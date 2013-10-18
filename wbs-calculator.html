@@ -240,108 +240,186 @@
 </template>
 
 <template name="viewReport">
-  {{#with curProject}}
-    {{#with calculatedStats}}
-      <h3>Proposal Summary</h3>
-      <div class="row">
-        <div class="span3">
+  <ul class="nav nav-tabs">
+    <li id="reportTable" class="{{reportType "table"}}"><a href="#">Excel</a></li>
+    <li id="reportText" class="{{reportType "text"}}"><a href="#">Word</a></li>
+  </ul>
+  {{#if reportType "table"}}
+    {{#with curProject}}
+      {{#with calculatedStats}}
+        <h3>Proposal Summary</h3>
+        <div class="row">
+          <div class="span3">
+          </div>
+          <div class="span9">
+              <p><strong>Electricity Saving per Year:</strong> ${{elecSaving}}</p>
+              <p><strong>Project Cost:</strong> ${{projCost}}</p>
+              <p><strong>ESCs Discount:</strong> ${{escDiscount}}</p>
+              <p><strong>Net Cost:</strong> ${{netCost}}</p>
+          </div>
         </div>
-        <div class="span9">
-            <p><strong>Electricity Saving per Year:</strong> ${{elecSaving}}</p>
-            <p><strong>Project Cost:</strong> ${{projCost}}</p>
-            <p><strong>ESCs Discount:</strong> ${{escDiscount}}</p>
-            <p><strong>Net Cost:</strong> ${{netCost}}</p>
-        </div>
-      </div>
-    {{/with}}
-    <br>
+      {{/with}}
+      <br>
 
-    <h3>Current Lighting Summary</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-          <th>QTY</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each lightList}}
-          <tr>
-            <td>{{type}}</td>
-            <td>{{getDescription}}</td>
-            <td>{{qty}}</td>
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
-    <br>
-
-    {{#with calculatedStats}}
-      <h3>Light Energy Saving Comparison</h3>
+      <h3>Current Lighting Summary</h3>
       <table class="table">
         <thead>
           <tr>
-            <th></th>
-            <th>Before</th>
-            <th>After</th>
-            <th>Savings per year</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>QTY</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th>Electricity Usage per Year (kWh)</th>
-            <td>{{kwBefore}}</td>
-            <td>{{kwAfter}}</td>
-            <td>{{kwSaving}}</td>
-          </tr>
-          <tr>
-            <th>Electricity Bill per Year</th>
-            <td>${{elecBefore}}</td>
-            <td>${{elecAfter}}</td>
-            <td>${{elecSaving}}</td>
-          </tr>
+          {{#each lightList}}
+            <tr>
+              <td>{{type}}</td>
+              <td>{{getDescription}}</td>
+              <td>{{qty}}</td>
+            </tr>
+          {{/each}}
         </tbody>
       </table>
       <br>
 
-      <h3>Project Cost</h3>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Total material costs(LED lights, sensors, receivers)</td>
-            <td>${{partsCost}}</td>
-          </tr>
-          <tr>
-            <td>Installation and labour costs</td>
-            <td>${{labourCost}}</td>
-          </tr>
-          <tr>
-            <td>NSW Government Incentives (ESCs)</td>
-            <td style="color: red;">-${{escDiscount}}</td>
-          </tr>
-          <tr>
-            <td>Net Cost</td>
-            <td>${{netCost}}</td>
-          </tr>
-          <tr>
-            <td>GST</td>
-            <td>${{GST}}</td>
-          </tr>
-          <tr class="totalRow">
-            <td>Total Cost</td>
-            <td>${{totalCost}}</td>
-          </tr>
-        </tbody>
-      </table>
+      {{#with calculatedStats}}
+        <h3>Light Energy Saving Comparison</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Before</th>
+              <th>After</th>
+              <th>Savings per year</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Electricity Usage per Year (kWh)</th>
+              <td>{{kwBefore}}</td>
+              <td>{{kwAfter}}</td>
+              <td>{{kwSaving}}</td>
+            </tr>
+            <tr>
+              <th>Electricity Bill per Year</th>
+              <td>${{elecBefore}}</td>
+              <td>${{elecAfter}}</td>
+              <td>${{elecSaving}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <br>
+
+        <h3>Project Cost</h3>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Total material costs(LED lights, sensors, receivers)</td>
+              <td>${{partsCost}}</td>
+            </tr>
+            <tr>
+              <td>Installation and labour costs</td>
+              <td>${{labourCost}}</td>
+            </tr>
+            <tr>
+              <td>NSW Government Incentives (ESCs)</td>
+              <td style="color: red;">-${{escDiscount}}</td>
+            </tr>
+            <tr>
+              <td>Net Cost</td>
+              <td>${{netCost}}</td>
+            </tr>
+            <tr>
+              <td>GST</td>
+              <td>${{GST}}</td>
+            </tr>
+            <tr class="totalRow">
+              <td>Total Cost</td>
+              <td>${{totalCost}}</td>
+            </tr>
+          </tbody>
+        </table>
+      {{/with}}
     {{/with}}
-  {{/with}}
+  {{/if}}
+
+  {{#if reportType "text"}}
+    {{#with curProject}}
+      <h3>Energy Saving Project "Quotation of Works"<br><small>- Green Building Project</small></h3>
+      <h4 class="text-center"><em>Commercial-in-Confidence</em></h4>
+
+      <div class="row">
+        <div class="span3">
+          <div id="toTextReportInfo">
+            TO:
+          </div>
+        </div>
+        <div class="span6">
+          <table id="textReportInfo">
+            <tbody>
+              <tr>
+                <td><b>Quotation Number:</b></td>
+                <td class="underline"><b>{{code}}</b></td>
+                <td class="underline"></td>
+              </tr>
+              <tr>
+                <td>Responsible manager:</td>
+                <td class="underline">{{buildingManager}}</td>
+                <td class="underline"></td>
+              </tr>
+              <tr>
+                <td>Building Name:</td>
+                <td class="underline">{{buildingName}}</td>
+                <td class="underline"></td>
+              </tr>
+              <tr>
+                <td>Address:</td>
+                <td class="underline">{{buildingManagerAddress}}</td>
+                <td class="underline"></td>
+              </tr>
+              <tr>
+                <td>Contact:</td>
+                <td>(tel):</td>
+                <td class="underline">{{buildingManagerNumber}}</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>(email):</td>
+                <td class="underline">{{buildingManagerEmail}}</td>
+            </tbody>
+          </table>
+        </div>
+        <div class="span3">
+        </div>
+      </div>
+      <div class="row">
+        <div class="span5">
+          <div class="hero-unit">
+            <address>
+              <strong>{{prepBy}}</strong><br>
+              Project Manager<br>
+              WBS Technology Pty Ltd<br>
+              <br>
+              <abbr title="Mobile">m:</abbr> <br>
+              <abbr title="Telephone">t:</abbr> (02) 8033 3169<br>
+              <abbr title="Fax">f:</abbr> (02) 8580 4689<br>
+              <abbr title="Email">e:</abbr> <br>
+              <abbr title="Website">w:</abbr> <a href="http://www.wbstech.com.au">www.wbstech.com.au</a><br>
+              <br>
+              Unit5, 52 Holker Street<br>
+              Silverwater, NSW 2128
+            </address>
+          </div>
+        </div>
+      </div>
+    {{/with}}
+  {{/if}}
 </template>
 
 <template name="lightInfo">
