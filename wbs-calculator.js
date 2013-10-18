@@ -67,6 +67,11 @@ if (Meteor.isClient) {
     }
     return Projects.find({});
   };
+  Template.selectProject.selectedProject = function () {
+    if (Session.equals('selectedProject', this.code)) {
+      return "selectedRow";
+    }
+  };
   Template.selectProject.nextAvailableNumber = function () {
     var highest = 0;
     Projects.find().forEach (function (curProject) {

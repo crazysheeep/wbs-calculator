@@ -25,6 +25,9 @@ body {
 .addRow {
   background-color: lightgray;
 }
+.selectedRow {
+  background-color: cyan;
+}
 .totalRow {
   background-color: lightgray;
   font-weight: bold;

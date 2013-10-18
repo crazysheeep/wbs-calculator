@@ -68,11 +68,21 @@
         <i class="icon-search"></i>
         <input type="text" class="text" id="searchProjects" placeholder="Search"/>
       </form>
-      <div class="btn-group btn-group-vertical">
-        {{#each projects}}
-          <button class="btn projectList" type="button">{{code}} - {{address}}</button>
-        {{/each}}
-      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Contract Number</th>
+            <th>Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each projects}}
+            <tr class="projectList {{selectedProject}}">
+              <td>{{code}}</td>
+              <td>{{address}}</td>
+            </tr>
+          {{/each}}
+      </table>
       <button id="confirmProject" class="btn btn-primary" type="button">Select Project</button>
     </div>
     <div class="span5">
