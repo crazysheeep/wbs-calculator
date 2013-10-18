@@ -5,7 +5,6 @@ HiddenValues = new Meteor.Collection('hiddenvalues');
 if (Meteor.isClient) {
   Session.setDefault('theme', 'dark'); // dark theme by default
   Session.setDefault('curPage', 'selectProject'); //current page - project/input etc
-  Session.setDefault('selectedProject', ''); //Project selected in project page
   Session.setDefault('curProject', '');      //Project being worked on
   Session.setDefault('selectedEditInput', ''); //Item selected for editing on Input page
   Session.setDefault('reportType', 'table');
@@ -68,7 +67,7 @@ if (Meteor.isClient) {
     return Projects.find({});
   };
   Template.selectProject.selectedProject = function () {
-    if (Session.equals('selectedProject', this.code)) {
+    if (Session.equals('curProject', this.code)) {
       return "selectedRow";
     }
   };
@@ -89,10 +88,9 @@ if (Meteor.isClient) {
       Meteor.call('dbProjectsDrop');
     },
     'click .projectList' : function () {
-      Session.set('selectedProject', this.code);
+      Session.set('curProject', this.code);
     },
     'click #confirmProject' : function () {
-      Session.set('curProject', Session.get('selectedProject'));
       Session.set('curPage', 'inputData');
     }
   });
