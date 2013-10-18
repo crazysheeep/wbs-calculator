@@ -58,22 +58,40 @@
 </template>
 
 <template name="selectProject">
-  <h1>Select Project</h1>
+  <h1>Project Selection</h1>
+  <br>
 
-  <form class="form-inline" role="form">
-    <i class="icon-search"></i>
-    <input type="text" class="text" id="searchProjects" placeholder="Search"/>
-  </form>
-
-  <div class="btn-group btn-group-vertical">
-    {{#each projects}}
-      <button class="btn projectList" type="button">{{code}} - {{address}}</button>
-    {{/each}}
+  <div class="row">
+    <div class="span6" style="padding-right:20px; border-right: 1px solid #ccc;">
+      <h3>Existing project</h3>
+      <form class="form-inline" role="form">
+        <i class="icon-search"></i>
+        <input type="text" class="text" id="searchProjects" placeholder="Search"/>
+      </form>
+      <div class="btn-group btn-group-vertical">
+        {{#each projects}}
+          <button class="btn projectList" type="button">{{code}} - {{address}}</button>
+        {{/each}}
+      </div>
+      <button id="confirmProject" class="btn btn-primary" type="button">Select Project</button>
+    </div>
+    <div class="span5">
+      <h3>New Project</h3>
+      <form class="form-horizontal">
+        <div class="control-group">
+          <label class="control-label" for "newProject">Contract Number</label>
+          <div class="controls">
+            <div class="input-append">
+              <input type="text" class="text" id="newProject" value="{{nextAvailableNumber}}"/>
+              <button id="createNewProject" class="btn btn-primary" type="button">Create</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
-
-  <input type="button" id="testButton" value="Debug (Remove all)"/>
-
-  <p><button id="confirmProject" class="btn btn-primary" type="button">Select Project</button></p>
+  <br>
+  <br>
 </template>
 
 <template name="inputData">

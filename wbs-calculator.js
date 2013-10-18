@@ -67,6 +67,18 @@ if (Meteor.isClient) {
     }
     return Projects.find({});
   };
+  Template.selectProject.nextAvailableNumber = function () {
+    var highest = 0;
+    Projects.find().forEach (function (curProject) {
+      var intRegex = /[1-9][0-9]*/;
+      var curCode = parseInt(intRegex.exec(curProject.code));
+      if (curCode > highest) {
+        highest = curCode;
+      }
+    });
+    highest++;
+    return "GB"+("000"+highest).slice(-4);
+  };
   Template.selectProject.events({
     'click #testButton' : function () {
       Meteor.call('dbProjectsDrop');
