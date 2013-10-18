@@ -1,5 +1,4 @@
 <head>
-  <link rel="stylesheet" type="text/css" media="print" href="/packages/bootstrap/css/bootstrap.css">
   <title>WBS Calculator: Main</title>
 </head>
 
@@ -362,7 +361,7 @@
           </div>
         </div>
         <div class="span6">
-          <table id="textReportInfo">
+          <table id="textReportInfo" class="borderless">
             <tbody>
               <tr>
                 <td><b>Quotation Number:</b></td>
@@ -401,6 +400,7 @@
       </div>
       <br>
       <br>
+
       <div class="row">
         <div class="span5">
           <div class="hero-unit">
@@ -423,18 +423,20 @@
       </div>
       <br>
       <br>
+
       <p>
         With reference to the above premises, it is with pleasure that we submit this Project “Quotation of Works” for the supply and installation of LED Lighting Solutions at Building Address. Please find enclosed specific details including our pricing schedule for your consideration.
       </p>
       <p>
-        The purpose of the <strong>Green Building Project</strong> is to provide effective and energy efficient lighting solutions for Building Address. The lighting solutions proposed are to replace (and dispose of) the current <strong>Fluorescent Lights and Fixtures</strong> located in Building Address, with appropriate LED Light (Emergency and Non Emergency) and the WBS Lighting System. This includes – Replace fluorescent fitting with LED fittings, Installing Sensors & Providing Wireless Network (that allows ‘Dim Down’ Technology).
+        The purpose of the <strong>Green Building Project</strong> is to provide effective and energy efficient lighting solutions for Building Address. The lighting solutions proposed are to replace (and dispose of) the current <strong>Fluorescent Lights and Fixtures</strong> located in Building Address, with appropriate LED Light (Emergency and Non Emergency) and the WBS Lighting System. This includes – Replace fluorescent fitting with LED fittings, Installing Sensors &amp; Providing Wireless Network (that allows ‘Dim Down’ Technology).
       </p>
       <p>
         WBS Technology Pty Ltd recommends LED lighting that is designed and tested for long life use. THe lights are also designed to emit a brighter light, whilst using less energy, which of course means lower costs (to the customer) and reduce the environmental impact.
       </p>
       <br>
+
       {{#with calculatedStats}}
-        <table class="table">
+        <table class="table table-bordered">
           <thead>
             <tr>
               <th style="background-color: lightgray;">Light Energy Savings Comparison</th>
@@ -460,6 +462,7 @@
         </table>
       {{/with}}
       <br>
+
       <h3>Benefits of the WBS System</h3>
       <ul>
         <li>WBS products have been designed using quality components and processes, this is why WBS can offer twice the standard industry warranty;</li>
@@ -472,11 +475,94 @@
             <li><em>This Energy Savings Scheme provides financial incentives to businesses for the implementation of energy savings projects. The incentives available under this scheme are ‘energy savings certificates’ for every megawatt hour (MWh) of electricity you save from eligible activities. Full details of the scheme are available at <a href="http://www.ess.nsw.gov.au">http://www.ess.nsw.gov.au</a></em></li>
           </ul>
         </li>
-        <li>Installing WBS LED Lights Fittings will improve the buildings image and resale value as a result of new & cost effective LED Lighting systems;</li>
-        <li>WBS Technology has a proven track record – having worked with more than 160 Residential & Commercial buildings in NSW;</li>
+        <li>Installing WBS LED Lights Fittings will improve the buildings image and resale value as a result of new &amp; cost effective LED Lighting systems;</li>
+        <li>WBS Technology has a proven track record – having worked with more than 160 Residential &amp; Commercial buildings in NSW;</li>
         <li>WBS Technology has Extensive experience with LED lighting Systems and employs qualified technical professionals;</li>
         <li>WBS will ensure each project is completed within three (3) months of acceptance of the project;</li>
       </ul>
+      <br>
+
+      <div class="row">
+        <div class="span1">
+        </div>
+        <div class="span4">
+          <table class="borderless">
+            <tbody>
+              <tr>
+                <td>Quotation Number:</td>
+                <td class="underline">{{code}}</td>
+              </tr>
+              <tr>
+                <td>Building Name:</td>
+                <td class="underline">{{buildingName}}</td>
+              </tr>
+              <tr>
+                <td>Building Address:</td>
+                <td class="underline">{{buildingAddress}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Location</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>QTY</th>
+            <th>Operating Hours</th>
+            <th>Air Conditioning</th>
+            <th>Replacement Product</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each lightList}}
+            <tr>
+              <td>{{location}}</td>
+              <td>{{type}}</td>
+              <td>{{getDescription}}</td>
+              <td>{{qty}}</td>
+              <td>{{hours}}</td>
+              <td>{{aircon}}</td>
+              <td>{{newType}}</td>
+              <td>${{calculateAmount}}</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+      <br>
+
+      {{#with calculatedStats}}
+        <div class="row">
+          <div class="span7">
+          </div>
+          <div class="span5">
+            <table class="table table-bordered">
+              <tbody>
+                <tr>
+                  <td>Total material costs(LED lights, sensors, receivers)</td>
+                  <td>${{partsCost}}</td>
+                </tr>
+                <tr>
+                  <td>Installation and labour costs</td>
+                  <td>${{labourCost}}</td>
+                </tr>
+                <tr>
+                  <td>NSW Government Incentives (ESCs)</td>
+                  <td style="color: red;">-${{escDiscount}}</td>
+                </tr>
+                <tr class="totalRow">
+                  <td>Total Cost<small>(GST Inc.)</small></td>
+                  <td>${{totalCost}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      {{/with}}
+      <br>
 
       <hr>
       <p><small>The quoted amount is for the supply and installation of LED Lighting systems, complete in all respects as per the information provided above, and the information provided by ‘<b>The Client</b>’ at the time of the site inspection conducted on {{date}}.</small></p>
@@ -484,7 +570,7 @@
       <p><small>Any delays to the expected start and/or completion of the project will be discussed, with revised completion dates being agreed.</small></p>
       <p><small>The project will commence within two (2) months of the acceptance of this “Quotation of Works”. Acceptance will be in the form of a signed proposal form and the payment of 30% deposit.</small></p>
       <p><small><b>The validity of this quotation remains for a period of 30 days from the date of receipt of this “Quotation of Works” form.</b></small></p>
-      <hr>
+      <br>
       <p><small>We are satisfied that this “Quotation of Works” is in keeping with the requirements of the project, as provided by you. We therefore hope that this quote is therefore in line with your requirements. If however you would like additional information, and/or clarification on any matter relating to this project, please don’t hesitate in contacting the undersigned.</small></p>
     {{/with}}
   {{/if}}

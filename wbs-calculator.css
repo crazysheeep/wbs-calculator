@@ -10,6 +10,9 @@ body {
 .float-right {
   float: right;
 }
+.borderless {
+  width: 100%;
+}
 
 #curProject {
   float: right;
@@ -51,9 +54,6 @@ body {
 #toTextReportInfo {
   float: right;
   padding-top: 15px;
-}
-#textReportInfo {
-  width: 100%;
 }
 #textReportInfo td {
   padding-top: 15px;

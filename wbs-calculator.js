@@ -287,6 +287,11 @@ if (Meteor.isClient) {
             elecAfter: elecAfter.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
             elecSaving: (elecBefore - elecAfter).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,")};
   };
+  Template.viewReport.calculateAmount = function () {
+    var price = +LightInfo.findOne({newType: this.newType}).price;
+    price *= this.qty;
+    return price.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
+  };
   Template.viewReport.events({
     'click #reportTable' : function () {
       Session.set('reportType', 'table');
