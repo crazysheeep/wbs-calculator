@@ -386,6 +386,9 @@ if (Meteor.isClient) {
     }
   });
 
+  Template.analysis.projectChosen = function () {
+    return !Session.equals('curProject', '');
+  };
   Template.analysis.analysisCalculation = function () {
     var results = [];
     var lights = Projects.findOne({code: Session.get('curProject')}).lightList;
