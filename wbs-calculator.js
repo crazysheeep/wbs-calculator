@@ -38,21 +38,51 @@ if (Meteor.isClient) {
     },
     'click #navProject' : function () {
       Session.set('curPage', 'selectProject');
+      Session.set('projectSearch', '');
+      Session.set('selectedEditInput', '');
+      Session.set('reportType', 'table');
+      Session.set('selectedEditInfo', '');
+      Session.set('saveDisabled', true);
     },
     'click #navInput' : function () {
       Session.set('curPage', 'inputData');
+      Session.set('projectSearch', '');
+      Session.set('selectedEditInput', '');
+      Session.set('reportType', 'table');
+      Session.set('selectedEditInfo', '');
+      Session.set('saveDisabled', true);
     },
     'click #navReport' : function () {
       Session.set('curPage', 'viewReport');
+      Session.set('projectSearch', '');
+      Session.set('selectedEditInput', '');
+      Session.set('reportType', 'table');
+      Session.set('selectedEditInfo', '');
+      Session.set('saveDisabled', true);
     },
     'click #navAnalysis' : function () {
       Session.set('curPage', 'analysis');
+      Session.set('projectSearch', '');
+      Session.set('selectedEditInput', '');
+      Session.set('reportType', 'table');
+      Session.set('selectedEditInfo', '');
+      Session.set('saveDisabled', true);
     },
     'click #navLightInfo' : function () {
       Session.set('curPage', 'lightInfo');
+      Session.set('projectSearch', '');
+      Session.set('selectedEditInput', '');
+      Session.set('reportType', 'table');
+      Session.set('selectedEditInfo', '');
+      Session.set('saveDisabled', true);
     },
     'click #navHiddenValues' : function () {
       Session.set('curPage', 'hiddenValues');
+      Session.set('projectSearch', '');
+      Session.set('selectedEditInput', '');
+      Session.set('reportType', 'table');
+      Session.set('selectedEditInfo', '');
+      Session.set('saveDisabled', true);
     }
   });
 
@@ -68,13 +98,22 @@ if (Meteor.isClient) {
         results.push({code: curProject.code, address: curProject.address});
       });
       Projects.find({address: new RegExp(searchTerm, 'i')}).forEach (function (curProject) {
-        if (results.indexOf(curProject.code) == -1) {
+        var alreadyAdded = false;
+        for (var i = 0; i < results.length; i++) {
+          if (results[i].code == curProject.code) {
+            alreadyAdded = true;
+          }
+        }
+        if (!alreadyAdded) {
           results.push({code: curProject.code, address: curProject.address});
         }
       });
       return results.sort();
     }
     return Projects.find({});
+  };
+  Template.selectProject.getProjectSearch = function () {
+    return Session.get('projectSearch');
   };
   Template.selectProject.selectedProject = function () {
     if (Session.equals('curProject', this.code)) {
@@ -134,10 +173,13 @@ if (Meteor.isClient) {
     return projectDetails.lightList;
   };
   Template.inputData.lightType = function () {
-    return LightInfo.find();
+    return LightInfo.find({newType: /.+/});
   };
   Template.inputData.getDescription = function () {
     return LightInfo.findOne({type: this.type}).description;
+  };
+  Template.inputData.getNewDescription = function () {
+    return LightInfo.findOne({type: this.newType}).description;
   };
   Template.inputData.selectedEdit = function () {
     if (Session.equals('selectedEditInput', this.index)) {
@@ -295,19 +337,21 @@ if (Meteor.isClient) {
     var escDiscount = 0;
 
     var kwBefore = 0;
+    var kwAfter = 0;
     this.lightList.forEach (function (curLight) {
       curLightInfo = LightInfo.findOne({type: curLight.type});
+      curNewLightInfo = LightInfo.findOne({type: curLight.newType});
       
-      partsCost += curLight.qty * curLightInfo.price;
+      partsCost += curLight.qty * curNewLightInfo.price;
       labourCost += curLight.qty * values.labourCost;
       //escDiscount += ?
 
       kwBefore += curLight.qty * curLightInfo.watts * curLight.hours / 1000;
+      kwAfter += curLight.qty * curNewLightInfo.watts * curLight.hours / 1000;
     });
 
-    var kwAfter = kwBefore * 0.2;
     var elecBefore = kwBefore * values.elecPrice;
-    var elecAfter = elecBefore * 0.2;
+    var elecAfter = kwAfter * values.elecPrice;
     var projCost = partsCost + labourCost;
     var netCost = projCost - escDiscount;
     var GST = netCost * 0.1;
@@ -329,7 +373,7 @@ if (Meteor.isClient) {
             elecSaving: (elecBefore - elecAfter).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,")};
   };
   Template.viewReport.calculateAmount = function () {
-    var price = +LightInfo.findOne({newType: this.newType}).price;
+    var price = +LightInfo.findOne({type: this.newType}).price;
     price *= this.qty;
     return price.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
   };
@@ -341,6 +385,39 @@ if (Meteor.isClient) {
       Session.set('reportType', 'text');
     }
   });
+
+  Template.analysis.analysisCalculation = function () {
+    var results = [];
+    var lights = Projects.findOne({code: Session.get('curProject')}).lightList;
+    lights.forEach( function (curLight) {
+      var found = -1;
+      for (var i = 0; i < results.length; i++) {
+        if (results[i].type == curLight.type && results[i].newType == curLight.newType) {
+          found = i;
+          break;
+        }
+      }
+      if (found == -1) {
+        var curLightInfo = LightInfo.find({type: curLight.newType});
+        var type = curLight.type;
+        var newType = curLight.newType;
+        var qty = curLight.qty;
+        //var payPerFitting = curLightInfo.payPerFitting;
+        var payPerFitting = 10;
+        var savingPerMonth = 0;
+        var payPerMonth = payPerFitting * qty;
+        var profitPerMonth = savingPerMonth - payPerMonth;
+        results.push({type: type,
+                      newType: newType,
+                      qty: qty,
+                      payPerFitting: payPerFitting.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+                      savingPerMonth: savingPerMonth.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+                      payPerMonth: payPerMonth.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
+                      profitPerMonth: profitPerMonth.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,")});
+      }
+    });
+    return results;
+  }
 
   Template.lightInfo.lights = function () {
     return LightInfo.find();
@@ -373,10 +450,6 @@ if (Meteor.isClient) {
         errors += "Type cannot be empty\n";
         legal = false;
       }
-      if (newType === "") {
-        errors += "New type cannot be empty\n";
-        legal = false;
-      }
       // Make sure type and newType don't conflict with existing entires
       if (!Session.get('selectedEditInfo')) {
         LightInfo.find().forEach (function (curLight) {
@@ -385,7 +458,7 @@ if (Meteor.isClient) {
             errors += "Cannot have two entries of same type "+type+"\n";
             legal = false;
           }
-          if (newType == curLight.newType) {
+          if (newType == curLight.newType && newType != "") {
             errors += "Cannot have two entries of same newType "+newType+"\n";
             legal = false;
           }
@@ -492,7 +565,7 @@ if (Meteor.isServer) {
         Projects.remove({code: code});
       },
       dbProjectsAddLight: function (code, location, type, qty, hours, tube, aircon, sensor, newType) {
-        var index = Math.floor((Math.random()*1000)+1)
+        var index = Math.floor((Math.random()*1000)+1);
         Projects.update({code: code},
                         {$push: {lightList: {index: index,
                                              location: location,
@@ -516,7 +589,7 @@ if (Meteor.isServer) {
                                 "lightList.$.newType": newType}});
       },
       dbProjectsRemoveLight: function (code, index) {
-        Projects.update({code: code}, {$pull: {lightList: {index: index}}});
+        Projects.update({code: code}, {$pull: {lightList: {_id: index}}});
       },
 
       dbLightInfoAdd: function (type, newType, description, price, watts) {

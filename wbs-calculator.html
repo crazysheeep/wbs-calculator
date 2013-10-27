@@ -49,11 +49,14 @@
   {{#if curPage "viewReport"}}
     {{> viewReport}}
   {{/if}}
-  {{#if curPage "hiddenValues"}}
-    {{> hiddenValues}}
+  {{#if curPage "analysis"}}
+    {{> analysis}}
   {{/if}}
   {{#if curPage "lightInfo"}}
     {{> lightInfo}}
+  {{/if}}
+  {{#if curPage "hiddenValues"}}
+    {{> hiddenValues}}
   {{/if}}
 </template>
 
@@ -66,7 +69,7 @@
       <h3>Existing project</h3>
       <div class="form-inline">
         <i class="icon-search"></i>
-        <input type="text" class="text" id="searchProjects" placeholder="Search"/>
+        <input type="text" class="text" id="searchProjects" value="{{getProjectSeach}}" placeholder="Search"/>
       </div>
       <table class="table">
         <thead>
@@ -210,7 +213,7 @@
             <td>{{tube}}</td>
             <td>{{aircon}}</td>
             <td>{{sensor}}</td>
-            <td>{{newType}}</td>
+            <td><abbr title="{{getNewDescription}}">{{newType}}</abbr></td>
             <td>
               {{#if selectedEdit}}
                 <button class="cancelEditLightBtn btn btn-warning" type="button"><i class="icon-remove"></i></button>
@@ -608,6 +611,38 @@
       <p><small>We are satisfied that this “Quotation of Works” is in keeping with the requirements of the project, as provided by you. We therefore hope that this quote is therefore in line with your requirements. If however you would like additional information, and/or clarification on any matter relating to this project, please don’t hesitate in contacting the undersigned.</small></p>
     {{/with}}
   {{/if}}
+</template>
+
+<template name="analysis">
+  <h2>Savings Analysis</h2>
+  
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Fluorescent Fitting</th>
+        <th>LED Fitting</th>
+        <th>QTY</th>
+        <th>Monthly payment per fitting</th>
+        <th>Customer savings per month</th>
+        <th>Customer payment per month</th>
+        <th>Customer net profit per month</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each analysisCalculation}}
+        <tr>
+          <td>{{type}}</td>
+          <td>{{newType}}</td>
+          <td>{{qty}}</td>
+          <td>${{payPerFitting}}</td>
+          <td>${{savingPerMonth}}</td>
+          <td>${{payPerMonth}}</td>
+          <td>${{profitPerMonth}}</td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  <br>
 </template>
 
 <template name="lightInfo">
