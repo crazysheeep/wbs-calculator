@@ -160,6 +160,9 @@ if (Meteor.isClient) {
     }
   });
 
+  Template.inputData.projectChosen = function () {
+    return !Session.equals('curProject', '');
+  };
   Template.inputData.curProject = function () {
     return Projects.findOne({code: Session.get('curProject')});
   };
@@ -319,6 +322,9 @@ if (Meteor.isClient) {
     }
   });
   
+  Template.viewReport.projectChosen = function () {
+    return !Session.equals('curProject', '');
+  };
   Template.viewReport.reportType = function (type) {
     if (Session.equals('reportType', type)) {
       return "active";
@@ -420,10 +426,60 @@ if (Meteor.isClient) {
       }
     });
     return results;
-  }
+  };
+
+  Template.pieChart.rendered = function () {
+    var self = this;
+    self.node = self.find("p");
+
+    // Data
+    var dataset = {
+      apples: [2, 2, 2, 2, 2]
+    };
+
+    //Width and height
+    var width = 100,
+        height = 100,
+        radius = Math.min(width, height) / 2;
+
+    // render
+    self.handle = Meteor.autorun(function () {
+
+      var color = d3.scale.category10();
+
+      var pie = d3.layout.pie()
+        .sort(null);
+
+      var arc = d3.svg.arc()
+          .innerRadius(radius - 20)
+          .outerRadius(radius - 5);
+
+      var svg = d3.select(self.node).append("svg")
+          .attr("width", width)
+          .attr("height", height)
+          .append("g")
+          .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+      var path = svg.selectAll("path")
+          .data(pie(dataset.apples))
+          .enter().append("path")
+          .attr("fill", function(d, i) { return color(i); })
+          .attr("d", arc);
+    });
+  };
 
   Template.lightInfo.lights = function () {
     return LightInfo.find();
+  };
+  Template.lightInfo.printSensorCost = function () {
+    if (this.sensorCost == 'Standard') {
+      return this.sensorCost+' ('+HiddenValues.findOne({}).stdSensorCost+')';
+    }
+  };
+  Template.lightInfo.printInstallCost = function () {
+    if (this.installCost == 'Standard') {
+      return this.installCost+' ('+HiddenValues.findOne({}).stdInstallCost+')';
+    }
   };
   Template.lightInfo.selectedEdit = function () {
     if (Session.equals('selectedEditInfo', this.type)) {
@@ -439,7 +495,10 @@ if (Meteor.isClient) {
       var newType = $('#addLightInfoNew').val();
       var description = $('#addLightInfoDescription').val();
       var price = $('#addLightInfoPrice').val();
+      var escs = $('#addLightInfoEscs').val();
       var watts = $('#addLightInfoWatts').val();
+      var sensorCost = $('#addLightInfoSensorCost').val();
+      var installCost = $('#addLightInfoInstallCost').val();
       
       //window.alert(type+newType+description+price+watts);
 
@@ -455,7 +514,7 @@ if (Meteor.isClient) {
       }
       // Make sure type and newType don't conflict with existing entires
       if (!Session.get('selectedEditInfo')) {
-        LightInfo.find().forEach (function (curLight) {
+        lightInfo.forEach (function (curLight) {
           console.log("Comparing "+type+" and "+curLight.type);
           if (type == curLight.type) {
             errors += "Cannot have two entries of same type "+type+"\n";
@@ -475,6 +534,10 @@ if (Meteor.isClient) {
         errors += "Price must be a positive decimal\n";
         legal = false;
       }
+      if (!floatRegex.test(escs)) {
+        errors += "Escs must be a positive decimal\n";
+        legal = false;
+      }
       if (!intRegex.test(watts)) {
         errors += "Watts must be a positive integer\n";
         legal = false;
@@ -483,16 +546,22 @@ if (Meteor.isClient) {
       if (legal) {
         if (Session.get('selectedEditInfo')) {
           Meteor.call('dbLightInfoEdit', Session.get('selectedEditInfo'),
-                                         description, price, watts);
+                                         type, newType,
+                                         description, price, escs, watts,
+                                         sensorCost, installCost);
           Session.set('selectedEditInfo', '');
         } else {
-          Meteor.call('dbLightInfoAdd', type, newType, description, price, watts);
+          Meteor.call('dbLightInfoAdd', type, newType, description, price,
+                                        escs, watts, sensorCost, installCost);
         }
         $('#addLightInfoType').val('');
         $('#addLightInfoNew').val('');
         $('#addLightInfoDescription').val('');
         $('#addLightInfoPrice').val('');
+        $('#addLightInfoEscs').val('');
         $('#addLightInfoWatts').val('');
+        $('#addLightInfoSensorCost').val('');
+        $('#addLightInfoInstallCost').val('');
       } else {
         window.alert(errors);
       }
@@ -508,7 +577,10 @@ if (Meteor.isClient) {
       $('#addLightInfoNew').val(this.newType);
       $('#addLightInfoDescription').val(this.description);
       $('#addLightInfoPrice').val(this.price);
+      $('#addLightInfoEscs').val(this.escs);
       $('#addLightInfoWatts').val(this.watts);
+      $('#addLightInfoSensorCost').val(this.sensorCost);
+      $('#addLightInfoInstallCost').val(this.installCost);
     },
     'click .cancelEditLightInfoBtn' : function () {
       Session.set('selectedEditInfo', '');
@@ -516,7 +588,10 @@ if (Meteor.isClient) {
       $('#addLightInfoNew').val('');
       $('#addLightInfoDescription').val('');
       $('#addLightInfoPrice').val('');
+      $('#addLightInfoEscs').val('');
       $('#addLightInfoWatts').val('');
+      $('#addLightInfoSensorCost').val('');
+      $('#addLightInfoInstallCost').val('');
     }
   });
 
@@ -595,18 +670,26 @@ if (Meteor.isServer) {
         Projects.update({code: code}, {$pull: {lightList: {_id: index}}});
       },
 
-      dbLightInfoAdd: function (type, newType, description, price, watts) {
+      dbLightInfoAdd: function (type, newType, description, price, escs, watts, sensorCost, installCost) {
         LightInfo.insert({type: type,
                           newType: newType,
                           description: description,
                           price: price,
-                          watts: watts});
+                          escs: escs,
+                          watts: watts,
+                          sensorCost: sensorCost,
+                          installCost: installCost});
       },
-      dbLightInfoEdit: function (type, description, price, watts) {
-        LightInfo.update({type: type},
-                        {$set: {description: description,
+      dbLightInfoEdit: function (editType, type, newType, description, price, escs, watts, sensorCost, installCost) {
+        LightInfo.update({type: editType},
+                        {$set: {type: type,
+                                newType: newType,
+                                description: description,
                                 price: price,
-                                watts: watts}});
+                                escs: escs,
+                                watts: watts,
+                                sensorCost: sensorCost,
+                                installCost: installCost}});
       },
       dbLightInfoRemove: function (type) {
         LightInfo.remove({type: type});

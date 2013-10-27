@@ -1,5 +1,6 @@
 <head>
   <title>WBS Calculator: Main</title>
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 </head>
 
 <body>
@@ -25,8 +26,8 @@
           <ul class="nav">
             <li id="navProject" {{isActive "selectProject"}}><a href="#">Project</a></li>
             <li id="navInput" {{isActive "inputData"}}><a href="#">Input</a></li>
-            <li id="navReport" {{isActive "viewReport"}}><a href="#">Report</a></li>
-            <li id="navAnalysis" {{isActive "analysis"}}><a href="#">Analysis</a></li>
+            <li id="navReport" {{isActive "viewReport"}}><a href="#">Quotation</a></li>
+            <li id="navAnalysis" {{isActive "analysis"}}><a href="#">5 Year Program</a></li>
             <li class="divider-vertical"></li>
             <li id="navLightInfo" {{isActive "lightInfo"}}><a href="#">Light Info</a></li>
             <li id="navHiddenValues" {{isActive "hiddenValues"}}><a href="#">Hidden Values</a></li>
@@ -237,10 +238,9 @@
             </td>
             <td><input type="text" id="addLightDescription" class="input-med" disabled></td>
             <td><input type="text" id="addLightQty" class="input-mini" placeholder="Quantity"></td>
-            <td><input type="text" id="addLightHours" class="input-mini" placeholder="Hours"></td>
+            <td><input type="text" id="addLightHours" class="input-mini" value="8760" placeholder="Hours"></td>
             <td>
               <select id="addLightTube" class="select-small">
-                <option value="" disabled selected></option>
                 <option value="T8">T8</option>
                 <option value="T5">T5</option>
                 <option value="LED">LED</option>
@@ -248,14 +248,14 @@
             </td>
             <td>
               <select id="addLightAircon" class="select-small">
-                <option value="Yes">Yes</option>
                 <option value="No">No</option>
+                <option value="Yes">Yes</option>
               </select>
             </td>
             <td>
               <select id="addLightSensor" class="select-small">
-                <option value="Yes">Yes</option>
                 <option value="No">No</option>
+                <option value="Yes">Yes</option>
               </select>
             </td>
             <td>
@@ -656,11 +656,17 @@
       </tbody>
     </table>
     <br>
+    <div id="chart_div"></div>
+    {{> pieChart}}
   {{else}}
     <div class="alert">
       <strong>Error: No project currently selected.</strong>
     </div>
   {{/if}}
+</template>
+
+<template name="pieChart">
+  <p></p>
 </template>
 
 <template name="lightInfo">
@@ -671,8 +677,11 @@
         <th>Type</th>
         <th>New Type</th>
         <th>Description</th>
-        <td>Price</th>
+        <th>Fitting Cost</th>
+        <th><abbr title="ESC points for a single fitting running for 3000hrs a year">ESCs</abbr></th>
         <th>Watts</th>
+        <th>Control System Cost</th>
+        <th>Installation Cost</th>
         <th>Change/Remove</th>
       </tr>
     </thead>
@@ -683,7 +692,10 @@
           <td>{{newType}}</td>
           <td>{{description}}</td>
           <td>{{price}}</td>
+          <td>{{escs}}</td>
           <td>{{watts}}</td>
+          <td>{{printSensorCost}}</td>
+          <td>{{printInstallCost}}</td>
           <td>
             {{#if selectedEdit}}
               <button class="cancelEditLightInfoBtn btn btn-warning" type="button"><i class="icon-remove"></i></button>
@@ -698,8 +710,19 @@
         <td><input type="text" id="addLightInfoType" class="input-med" placeholder="Type"></td>
         <td><input type="text" id="addLightInfoNew" class="input-med" placeholder="New Type"></td>
         <td><input type="text" id="addLightInfoDescription" class="input-large" placeholder="Description"></td>
-        <td><input type="text" id="addLightInfoPrice" class="input-mini" placeholder="Price"></td>    
-        <td><input type="text" id="addLightInfoWatts" class="input-mini" placeholder="Watts"></td>      
+        <td><input type="text" id="addLightInfoPrice" class="input-mini" placeholder="Price"></td>
+        <td><input type="text" id="addLightInfoEscs" class="input-mini" placeholder="ESCs"></td>
+        <td><input type="text" id="addLightInfoWatts" class="input-mini" placeholder="Watts"></td>
+        <td>
+          <select id="addLightInfoSensorCost" class="select-small">
+            <option value="Standard">Standard</option>
+          </select>
+        </td>
+        <td>
+          <select id="addLightInfoInstallCost" class="select-small">
+            <option value="Standard">Standard</option>
+          </select>
+        </td>
         {{#if editing}}
           <td><button id="addLightInfoBtn" class="btn btn-primary" type="button">Update</button></td>
         {{else}}
