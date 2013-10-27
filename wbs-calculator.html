@@ -292,9 +292,11 @@
       <br>
 
       <h2>
-        Snapshot of LightInfo - {{printSnapshotDate}}
-        <button id="updateSnapshot" class="btn btn-primary" type="button">Update Snapshot</button>
+        Snapshots - {{printSnapshotDate}}
+        <button id="updateSnapshot" class="btn btn-primary" type="button">Update Snapshots</button>
       </h2>
+
+      <h4>Light Info</h4>
       <table class="table">
         <thead>
           <tr>
@@ -323,6 +325,30 @@
           {{/each}}
         </tbody>
       </table>
+      <br>
+
+      <h4>Hidden Values</h4>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ESC Value</th>
+            <th>Electricity Cost</th>
+            <th>Standard Installation Rate</th>
+            <th>Standard Sensor Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#with snapshotHiddenValues}}
+            <tr>
+              <td>{{escPrice}}</td>
+              <td>{{elecPrice}}</td>
+              <td>{{stdInstallCost}}</td>
+              <td>{{stdSensorCost}}</td>
+            </tr>
+          {{/with}}
+        </tbody>
+      </table>
+      <br>
     {{/with}}
   {{else}}
     <div class="alert">

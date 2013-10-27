@@ -214,7 +214,10 @@ if (Meteor.isClient) {
   };
   Template.inputData.snapshotLights = function () {
     return this.snapshotLightInfo;
-  },
+  };
+  Template.inputData.snapshotHiddenValues = function () {
+    return this.snapshotHiddenValues;
+  };
   Template.inputData.events({
     'keyup .projectInfo' : function () {
       Session.set('saveDisabled', false);
