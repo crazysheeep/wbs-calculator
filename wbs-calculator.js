@@ -11,6 +11,7 @@ if (Meteor.isClient) {
   Session.setDefault('reportType', 'table');
   Session.setDefault('selectedEditInfo', ''); //Item selected for editing on Light Info page
   Session.setDefault('saveDisabled', true); //Input page, disabled by default
+  Session.setDefault('saveHiddenValueDisabled', true);
 
   Template.navbar.theme = function () {
     if (Session.equals('theme', 'dark')) {
@@ -394,7 +395,7 @@ if (Meteor.isClient) {
       kwAfter += curLight.qty * curNewLightInfo.watts * curLight.hours / 1000;
     });
 
-    escDiscount *= values.escPrice;
+    escDiscount *= values.escPrice * 0.8;
     var elecBefore = kwBefore * values.elecPrice;
     var elecAfter = kwAfter * values.elecPrice;
     var projCost = partsCost + labourCost;
@@ -637,6 +638,32 @@ if (Meteor.isClient) {
   Template.hiddenValues.values = function() {
     return HiddenValues.findOne({});
   };
+  Template.hiddenValues.saveDisabled = function() {
+    if (Session.equals('saveHiddenValueDisabled', true)) {
+      return 'disabled';
+    }
+  };
+  Template.hiddenValues.events({
+    'keyup .hiddenValueField' : function () {
+      Session.set('saveHiddenValueDisabled', false);
+    },
+    'click .saveHiddenValuesBtn' : function () {
+      Session.set('saveHiddenValueDisabled', true);
+      
+      Meteor.call('dbHiddenValuesEdit', $('#escPrice').val(),
+                                    $('#elecPrice').val(),
+                                    $('#stdInstallCost').val(),
+                                    $('#stdSensorCost').val());
+    },
+    'click .cancelHiddenValuesBtn' : function () {
+      Session.set('saveHiddenValueDisabled', true);
+      hiddenData = HiddenValues.findOne({});
+      $('#escPrice').val(hiddenData.escPrice);
+      $('#elecPrice').val(hiddenData.elecPrice);
+      $('#stdInstallCost').val(hiddenData.stdInstallCost);
+      $('#stdSensorCost').val(hiddenData.stdSensorCost);
+    }
+  });
 }
 
 if (Meteor.isServer) {
@@ -654,7 +681,7 @@ if (Meteor.isServer) {
       LightInfo.insert({type: '132', price: '100.80', newType: 'R15LED'});
     }
     if (HiddenValues.find().count() === 0) {
-      HiddenValues.insert({escPrice: 22.5, elecPrice: 22.5, labourCost: 45, sensorPrice: 50});
+      HiddenValues.insert({escPrice: 22.5, elecPrice: 22.5, stdInstallCost: 45, stdSensorCost: 50});
     }
 
     Meteor.methods({
@@ -742,6 +769,12 @@ if (Meteor.isServer) {
           Projects.update({code: code}, {$push: {snapshotLightInfo: curLight}});
         });
         Projects.update({code: code}, {$set: {snapshotDate: new Date().getTime()}});
+      },
+      dbHiddenValuesEdit: function (escPrice, elecPrice, stdInstallCost, stdSensorCost) {
+        HiddenValues.update({}, {$set: {escPrice: escPrice,
+                                        elecPrice: elecPrice,
+                                        stdInstallCost: stdInstallCost,
+                                        stdSensorCost: stdSensorCost}});
       },
       dbHiddenValuesSnapshot: function (code) {
         Projects.update({code: code}, {$set: {snapshotHiddenValues: HiddenValues.findOne({})}});

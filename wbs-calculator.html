@@ -783,12 +783,37 @@
 </template>
 
 <template name="hiddenValues">
-  <h2>ESCs</h2>
-  <h2>Other Values</h2>
+  <h2>Values</h2>
   {{#with values}}
-    <p>ESCs: {{escPrice}}</p>
-    <p>Electricity price: {{elecPrice}}</p>
-    <p>Labour cost: {{labourCost}}</p>
-    <p>Sensor cost: {{sensorPrice}}</p>
+    <form class="form-horizontal">
+      <div class="control-group">
+        <label class="control-label" for="escPrice">ESC Value</label>
+        <div class="controls">
+          <input type="text" id="escPrice" class="hiddenValueField" value="{{escPrice}}">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="elecPrice">Electricity Cost</label>
+        <div class="controls">
+          <input type="text" id="elecPrice" class="hiddenValueField" value="{{elecPrice}}">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="standardInstallCost">Standard Installation Rate</label>
+        <div class="controls">
+          <input type="text" id="stdInstallCost" class="hiddenValueField" value="{{stdInstallCost}}">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="standardSensorCost">Standard Sensor Price</label>
+        <div class="controls">
+          <input type="text" id="stdSensorCost" class="hiddenValueField" value="{{stdSensorCost}}">
+        </div>
+      </div>
+      <div class="center-align">
+        <button class="saveHiddenValuesBtn btn btn-primary" type="button" {{saveDisabled}}><i class="icon-ok"></i> Save Changes</button>
+        <button class="cancelHiddenValuesBtn btn btn-danger" type="button" {{saveDisabled}}><i class="icon-remove"></i> Discard Changes</button>
+      </div>
+    </form>
   {{/with}}
 </template>
