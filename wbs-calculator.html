@@ -216,6 +216,7 @@
             <th>Aircon</th>
             <th>Sensor</th>
             <th>New Type</th>
+            <th>Add sensor?</th>
             <th>Change/Remove</th>
           </tr>
         </thead>
@@ -231,6 +232,7 @@
               <td>{{aircon}}</td>
               <td>{{sensor}}</td>
               <td><abbr title="{{getNewDescription}}">{{newType}}</abbr></td>
+              <td>{{addSensor}}</td>
               <td>
                 {{#if selectedEdit}}
                   <button class="cancelEditLightBtn btn btn-warning" type="button"><i class="icon-remove"></i></button>
@@ -279,6 +281,12 @@
                 {{#each lightType}}
                   <option value="{{newType}}">{{newType}}</option>
                 {{/each}}
+              </select>
+            </td>
+            <td>
+              <select id="addAddSensor" class="select-small">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
               </select>
             </td>
             {{#if editing}}
