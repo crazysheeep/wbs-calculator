@@ -76,6 +76,7 @@
         <thead>
           <tr>
             <th>Contract Number</th>
+            <th>Status</th>
             <th>Address</th>
             <th></th>
           </tr>
@@ -84,6 +85,20 @@
           {{#each projects}}
             <tr class="projectList {{selectedProject}}">
               <td>{{code}}</td>
+              <td>
+                {{#if projectStatus 'inProcess'}}
+                  <span class="label label-info">In Process</span>
+                {{/if}}
+                {{#if projectStatus 'Quote'}}
+                  <span class="label label-success">Quote</span>
+                {{/if}}
+                {{#if projectStatus 'Pending'}}
+                  <span class="label label-warning">Pending</span>
+                {{/if}}
+                {{#if projectStatus 'Closed'}}
+                  <span class="label label-inverse">Closed</span>
+                {{/if}}
+              </td>
               <td>{{address}}</td>
               <td>
                 {{#if selectedProject}}
@@ -272,6 +287,40 @@
               <td><button id="addLightBtn" class="btn btn-primary" type="button">Add</button></td>
             {{/if}}
           </tr>
+        </tbody>
+      </table>
+      <br>
+
+      <h2>
+        Snapshot of LightInfo - {{printSnapshotDate}}
+        <button id="updateSnapshot" class="btn btn-primary" type="button">Update Snapshot</button>
+      </h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>New Type</th>
+            <th>Description</th>
+            <th>Fitting Cost</th>
+            <th><abbr title="ESC points for a single fitting running for 3000hrs a year">ESCs</abbr></th>
+            <th>Watts</th>
+            <th>Control System Cost</th>
+            <th>Installation Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each snapshotLights}}
+            <tr>
+              <td>{{type}}</td>
+              <td>{{newType}}</td>
+              <td>{{description}}</td>
+              <td>{{price}}</td>
+              <td>{{escs}}</td>
+              <td>{{watts}}</td>
+              <td>{{printSensorCost}}</td>
+              <td>{{printInstallCost}}</td>
+            </tr>
+          {{/each}}
         </tbody>
       </table>
     {{/with}}

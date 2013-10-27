@@ -112,6 +112,9 @@ if (Meteor.isClient) {
     }
     return Projects.find({});
   };
+  Template.selectProject.projectStatus = function (status) {
+    return this.status == status;
+  };
   Template.selectProject.getProjectSearch = function () {
     return Session.get('projectSearch');
   };
@@ -155,6 +158,8 @@ if (Meteor.isClient) {
     'click #createNewProject' : function () {
       var code = $('#newProject').val();
       Meteor.call('dbProjectsAdd', code);
+      Meteor.call('dbLightInfoSnapshot', code);
+      Meteor.call('dbHiddenValuesSnapshot', code);
       Session.set('curProject', code);
       Session.set('curPage', 'inputData');
     }
@@ -192,6 +197,23 @@ if (Meteor.isClient) {
   Template.inputData.editing = function () {
     return Session.get('selectedEditInput');
   };
+  Template.inputData.printSnapshotDate = function () {
+    var date = new Date(Projects.findOne({code: Session.get('curProject')}).snapshotDate);
+    return date.getDate() + "/" + date.getMonth() + "/" + date.getFullYear();
+  },
+  Template.inputData.printSensorCost = function () {
+    if (this.sensorCost == 'Standard') {
+      return this.sensorCost+' ('+HiddenValues.findOne({}).stdSensorCost+')';
+    }
+  };
+  Template.inputData.printInstallCost = function () {
+    if (this.installCost == 'Standard') {
+      return this.installCost+' ('+HiddenValues.findOne({}).stdInstallCost+')';
+    }
+  };
+  Template.inputData.snapshotLights = function () {
+    return this.snapshotLightInfo;
+  },
   Template.inputData.events({
     'keyup .projectInfo' : function () {
       Session.set('saveDisabled', false);
@@ -319,6 +341,10 @@ if (Meteor.isClient) {
       $('#addLightAircon').val('');
       $('#addLightSensor').val('');
       $('#addLightNew').val('');
+    },
+    'click #updateSnapshot' : function () {
+      Meteor.call('dbLightInfoSnapshot', this.code);
+      Meteor.call('dbHiddenValuesSnapshot', this.code);
     }
   });
   
@@ -337,7 +363,7 @@ if (Meteor.isClient) {
     return LightInfo.findOne({type: this.type}).description;
   };
   Template.viewReport.calculatedStats = function () {
-    var values = HiddenValues.findOne({});
+    var values = Projects.findOne({code: Session.get('curProject')}).snapshotHiddenValues;
     var partsCost = 0;
     var labourCost = 0;
     var escDiscount = 0;
@@ -345,17 +371,30 @@ if (Meteor.isClient) {
     var kwBefore = 0;
     var kwAfter = 0;
     this.lightList.forEach (function (curLight) {
-      curLightInfo = LightInfo.findOne({type: curLight.type});
-      curNewLightInfo = LightInfo.findOne({type: curLight.newType});
-      
+      var allLightInfo = Projects.findOne({code: Session.get('curProject')}).snapshotLightInfo;
+      var curLightInfo;
+      for (var i = 0; i < allLightInfo.length; i++) {
+        if (allLightInfo[i].type == curLight.type) {
+          curLightInfo = allLightInfo[i];
+          break;
+        }
+      }
+      var curNewLightInfo;
+      for (var i = 0; i < allLightInfo.length; i++) {
+        if (allLightInfo[i].type == curLight.newType) {
+          curNewLightInfo = allLightInfo[i];
+          break;
+        }
+      }
       partsCost += curLight.qty * curNewLightInfo.price;
       labourCost += curLight.qty * values.labourCost;
-      //escDiscount += ?
+      escDiscount += curLight.qty * curNewLightInfo.escs;
 
       kwBefore += curLight.qty * curLightInfo.watts * curLight.hours / 1000;
       kwAfter += curLight.qty * curNewLightInfo.watts * curLight.hours / 1000;
     });
 
+    escDiscount *= values.escPrice;
     var elecBefore = kwBefore * values.elecPrice;
     var elecAfter = kwAfter * values.elecPrice;
     var projCost = partsCost + labourCost;
@@ -604,10 +643,10 @@ if (Meteor.isServer) {
   Meteor.startup(function () {
     // code to run on server at startup
     if (Projects.find().count() === 0) {
-      Projects.insert({code: 'GB0001', address: '30 Felton Rd Carlingford', lightList: []});
-      Projects.insert({code: 'GB0002', address: '52 Holker St Silverwater', lightList: []});
-      Projects.insert({code: 'GB0003', address: 'some address', lightList: []});
-      Projects.insert({code: 'GB0004', address: 'al;skdfj;iosafjaw;lfj;sdio', lightList: []});
+      Projects.insert({code: 'GB0001', status: 'Pending', address: '30 Felton Rd Carlingford', lightList: []});
+      Projects.insert({code: 'GB0002', status: 'Closed', address: '52 Holker St Silverwater', lightList: []});
+      Projects.insert({code: 'GB0003', status: 'inProcess', address: 'some address', lightList: []});
+      Projects.insert({code: 'GB0004', status: 'Quote', address: 'al;skdfj;iosafjaw;lfj;sdio', lightList: []});
     }
     if (LightInfo.find().count() === 0) {
       LightInfo.insert({type: 'EM236', price: '100.80', newType: 'EM36LED'});
@@ -623,7 +662,9 @@ if (Meteor.isServer) {
         Projects.remove({});
       },
       dbProjectsAdd: function (code) {
-        Projects.insert({code: code, lightList: []});
+        var date = new Date();
+        var stringDate = date.getDate()+'/'+date.getMonth()+'/'+date.getFullYear();
+        Projects.insert({code: code, status: 'inProcess', date: stringDate, lightList: []});
       },
       dbProjectsEdit: function (code, buildingName, address, date, prepBy,
                                 buildingManager, buildingManagerAddress, buildingManagerNumber, buildingManagerEmail) {
@@ -693,6 +734,18 @@ if (Meteor.isServer) {
       },
       dbLightInfoRemove: function (type) {
         LightInfo.remove({type: type});
+      },
+      dbLightInfoSnapshot: function (code) {
+        //empty previous snapshot
+        Projects.update({code: code}, {$set: {snapshotLightInfo: []}});
+        LightInfo.find().forEach (function (curLight) {
+          Projects.update({code: code}, {$push: {snapshotLightInfo: curLight}});
+        });
+        Projects.update({code: code}, {$set: {snapshotDate: new Date().getTime()}});
+      },
+      dbHiddenValuesSnapshot: function (code) {
+        Projects.update({code: code}, {$set: {snapshotHiddenValues: HiddenValues.findOne({})}});
+        Projects.update({code: code}, {$set: {snapshotDate: new Date().getTime()}});
       }
     });
   });
