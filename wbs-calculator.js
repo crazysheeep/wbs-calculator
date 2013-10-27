@@ -4,6 +4,7 @@ HiddenValues = new Meteor.Collection('hiddenvalues');
 
 if (Meteor.isClient) {
   Session.setDefault('theme', 'dark'); // dark theme by default
+  Session.setDefault('projectSearch', '');
   Session.setDefault('curPage', 'selectProject'); //current page - project/input etc
   Session.setDefault('curProject', '');      //Project being worked on
   Session.setDefault('selectedEditInput', ''); //Item selected for editing on Input page
@@ -60,9 +61,18 @@ if (Meteor.isClient) {
   };
 
   Template.selectProject.projects = function () {
-    var searchTerm = '';
+    var searchTerm = Session.get('projectSearch');
     if (searchTerm) {
-      return Projects.find({name: searchTerm});
+      var results = [];
+      Projects.find({code: new RegExp(searchTerm, 'i')}).forEach (function (curProject) {
+        results.push({code: curProject.code, address: curProject.address});
+      });
+      Projects.find({address: new RegExp(searchTerm, 'i')}).forEach (function (curProject) {
+        if (results.indexOf(curProject.code) == -1) {
+          results.push({code: curProject.code, address: curProject.address});
+        }
+      });
+      return results.sort();
     }
     return Projects.find({});
   };
@@ -87,10 +97,26 @@ if (Meteor.isClient) {
     'click #testButton' : function () {
       Meteor.call('dbProjectsDrop');
     },
+    'keyup #searchProjects' : function () {
+      Session.set('projectSearch', $('#searchProjects').val().trim());
+    },
     'click .projectList' : function () {
       Session.set('curProject', this.code);
     },
+    'click .removeProjectBtn' : function () {
+      if (confirm("Are you sure you want to delete this project?")) {
+        var code = Session.get('curProject');
+        Session.set('curProject', '');
+        Meteor.call('dbProjectsRemove', code);
+      }
+    },
     'click #confirmProject' : function () {
+      Session.set('curPage', 'inputData');
+    },
+    'click #createNewProject' : function () {
+      var code = $('#newProject').val();
+      Meteor.call('dbProjectsAdd', code);
+      Session.set('curProject', code);
       Session.set('curPage', 'inputData');
     }
   });
@@ -446,7 +472,7 @@ if (Meteor.isServer) {
         Projects.remove({});
       },
       dbProjectsAdd: function (code) {
-        //TODO
+        Projects.insert({code: code, lightList: []});
       },
       dbProjectsEdit: function (code, buildingName, address, date, prepBy,
                                 buildingManager, buildingManagerAddress, buildingManagerNumber, buildingManagerEmail) {
@@ -461,6 +487,9 @@ if (Meteor.isServer) {
                                 buildingManagerNumber: buildingManagerNumber,
                                 buildingManagerEmail: buildingManagerEmail}});
 
+      },
+      dbProjectsRemove: function (code) {
+        Projects.remove({code: code});
       },
       dbProjectsAddLight: function (code, location, type, qty, hours, tube, aircon, sensor, newType) {
         var index = Math.floor((Math.random()*1000)+1)
