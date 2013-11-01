@@ -2,6 +2,8 @@ Projects = new Meteor.Collection('projects');
 LightInfo = new Meteor.Collection('lightinfo');
 HiddenValues = new Meteor.Collection('hiddenvalues');
 
+
+
 if (Meteor.isClient) {
   Session.setDefault('theme', 'dark'); // dark theme by default
   Session.setDefault('projectSearch', '');
@@ -31,6 +33,7 @@ if (Meteor.isClient) {
   };
   Template.navbar.events({
     'click #logo' : function () {
+      console.log(LightInfo.find());
       if (Session.equals('theme', 'light')) {
         Session.set('theme', 'dark');
       } else if (Session.equals('theme', 'dark')) {
@@ -96,7 +99,7 @@ if (Meteor.isClient) {
     if (searchTerm) {
       var results = [];
       Projects.find({code: new RegExp(searchTerm, 'i')}).forEach (function (curProject) {
-        results.push({code: curProject.code, address: curProject.address});
+        results.push({code: curProject.code, address: curProject.address, status: curProject.status});
       });
       Projects.find({address: new RegExp(searchTerm, 'i')}).forEach (function (curProject) {
         var alreadyAdded = false;
@@ -106,7 +109,7 @@ if (Meteor.isClient) {
           }
         }
         if (!alreadyAdded) {
-          results.push({code: curProject.code, address: curProject.address});
+          results.push({code: curProject.code, address: curProject.address, status: curProject.status});
         }
       });
       return results.sort();
@@ -158,11 +161,28 @@ if (Meteor.isClient) {
     },
     'click #createNewProject' : function () {
       var code = $('#newProject').val();
-      Meteor.call('dbProjectsAdd', code);
-      Meteor.call('dbLightInfoSnapshot', code);
-      Meteor.call('dbHiddenValuesSnapshot', code);
-      Session.set('curProject', code);
-      Session.set('curPage', 'inputData');
+      var codeRegex = /^GB[0-9]+$/;
+      var errors = '';
+      var valid = true;
+      if (!codeRegex.test(code)) {
+        valid = false;
+        errors += 'Project code must be in the form GBxxxx\n';
+      }
+      Projects.find().forEach (function (proj) {
+        if (proj.code == code) {
+          valid = false;
+          errors += 'Error: project ' + code + ' already exists\n';
+        }
+      });
+      if (valid) {
+        Meteor.call('dbProjectsAdd', code);
+        Meteor.call('dbLightInfoSnapshot', code);
+        Meteor.call('dbHiddenValuesSnapshot', code);
+        Session.set('curProject', code);
+        Session.set('curPage', 'inputData');
+      } else {
+        window.alert(errors);
+      }
     }
   });
 
@@ -553,6 +573,7 @@ if (Meteor.isClient) {
       var watts = $('#addLightInfoWatts').val();
       var sensorCost = $('#addLightInfoSensorCost').val();
       var installCost = $('#addLightInfoInstallCost').val();
+      var tubeCost = $('#addLightInfoTubeCost').val();
       
       //window.alert(type+newType+description+price+watts);
 
@@ -596,17 +617,21 @@ if (Meteor.isClient) {
         errors += "Watts must be a positive integer\n";
         legal = false;
       }
+      if (!intRegex.test(tubeCost)) {
+        errors += "Tube cost must be a positive integer\n";
+        legal = false;
+      }
       
       if (legal) {
         if (Session.get('selectedEditInfo')) {
           Meteor.call('dbLightInfoEdit', Session.get('selectedEditInfo'),
                                          type, newType,
                                          description, price, escs, watts,
-                                         sensorCost, installCost);
+                                         sensorCost, installCost, tubeCost);
           Session.set('selectedEditInfo', '');
         } else {
           Meteor.call('dbLightInfoAdd', type, newType, description, price,
-                                        escs, watts, sensorCost, installCost);
+                                        escs, watts, sensorCost, installCost, tubeCost);
         }
         $('#addLightInfoType').val('');
         $('#addLightInfoNew').val('');
@@ -616,6 +641,7 @@ if (Meteor.isClient) {
         $('#addLightInfoWatts').val('');
         $('#addLightInfoSensorCost').val('');
         $('#addLightInfoInstallCost').val('');
+        $('#addLightInfoTubeCost').val('');
       } else {
         window.alert(errors);
       }
@@ -635,6 +661,7 @@ if (Meteor.isClient) {
       $('#addLightInfoWatts').val(this.watts);
       $('#addLightInfoSensorCost').val(this.sensorCost);
       $('#addLightInfoInstallCost').val(this.installCost);
+      $('#addLightInfoTubeCost').val(this.tubeCost);
     },
     'click .cancelEditLightInfoBtn' : function () {
       Session.set('selectedEditInfo', '');
@@ -646,6 +673,7 @@ if (Meteor.isClient) {
       $('#addLightInfoWatts').val('');
       $('#addLightInfoSensorCost').val('');
       $('#addLightInfoInstallCost').val('');
+      $('#addLightInfoTubeCost').val('');
     }
   });
 
@@ -667,7 +695,8 @@ if (Meteor.isClient) {
       Meteor.call('dbHiddenValuesEdit', $('#escPrice').val(),
                                     $('#elecPrice').val(),
                                     $('#stdInstallCost').val(),
-                                    $('#stdSensorCost').val());
+                                    $('#stdSensorCost').val(),
+                                    $('#maintCost').val());
     },
     'click .cancelHiddenValuesBtn' : function () {
       Session.set('saveHiddenValueDisabled', true);
@@ -676,6 +705,7 @@ if (Meteor.isClient) {
       $('#elecPrice').val(hiddenData.elecPrice);
       $('#stdInstallCost').val(hiddenData.stdInstallCost);
       $('#stdSensorCost').val(hiddenData.stdSensorCost);
+      $('#maintCost').val(hiddenData.maintCost);
     }
   });
 }
@@ -754,7 +784,7 @@ if (Meteor.isServer) {
         Projects.update({code: code}, {$pull: {lightList: {index: index}}});
       },
 
-      dbLightInfoAdd: function (type, newType, description, price, escs, watts, sensorCost, installCost) {
+      dbLightInfoAdd: function (type, newType, description, price, escs, watts, sensorCost, installCost, tubeCost) {
         LightInfo.insert({type: type,
                           newType: newType,
                           description: description,
@@ -762,9 +792,10 @@ if (Meteor.isServer) {
                           escs: escs,
                           watts: watts,
                           sensorCost: sensorCost,
-                          installCost: installCost});
+                          installCost: installCost,
+                          tubeCost: tubeCost});
       },
-      dbLightInfoEdit: function (editType, type, newType, description, price, escs, watts, sensorCost, installCost) {
+      dbLightInfoEdit: function (editType, type, newType, description, price, escs, watts, sensorCost, installCost, tubeCost) {
         LightInfo.update({type: editType},
                         {$set: {type: type,
                                 newType: newType,
@@ -773,7 +804,8 @@ if (Meteor.isServer) {
                                 escs: escs,
                                 watts: watts,
                                 sensorCost: sensorCost,
-                                installCost: installCost}});
+                                installCost: installCost,
+                                tubeCost: tubeCost}});
       },
       dbLightInfoRemove: function (type) {
         LightInfo.remove({type: type});
@@ -786,11 +818,12 @@ if (Meteor.isServer) {
         });
         Projects.update({code: code}, {$set: {snapshotDate: new Date().getTime()}});
       },
-      dbHiddenValuesEdit: function (escPrice, elecPrice, stdInstallCost, stdSensorCost) {
+      dbHiddenValuesEdit: function (escPrice, elecPrice, stdInstallCost, stdSensorCost, maintCost) {
         HiddenValues.update({}, {$set: {escPrice: escPrice,
                                         elecPrice: elecPrice,
                                         stdInstallCost: stdInstallCost,
-                                        stdSensorCost: stdSensorCost}});
+                                        stdSensorCost: stdSensorCost,
+                                        maintCost: maintCost}});
       },
       dbHiddenValuesSnapshot: function (code) {
         Projects.update({code: code}, {$set: {snapshotHiddenValues: HiddenValues.findOne({})}});

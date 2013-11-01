@@ -316,6 +316,7 @@
             <th>Watts</th>
             <th>Control System Cost</th>
             <th>Installation Cost</th>
+            <th>Tube Cost</th>
           </tr>
         </thead>
         <tbody>
@@ -329,6 +330,7 @@
               <td>{{watts}}</td>
               <td>{{printSensorCost}}</td>
               <td>{{printInstallCost}}</td>
+              <td>{{tubeCost}}</td>
             </tr>
           {{/each}}
         </tbody>
@@ -343,6 +345,7 @@
             <th>Electricity Cost</th>
             <th>Standard Installation Rate</th>
             <th>Standard Sensor Cost</th>
+            <th>Maintenance Cost per Year</th>
           </tr>
         </thead>
         <tbody>
@@ -352,6 +355,7 @@
               <td>{{elecPrice}}</td>
               <td>{{stdInstallCost}}</td>
               <td>{{stdSensorCost}}</td>
+              <td>{{maintCost}}</td>
             </tr>
           {{/with}}
         </tbody>
@@ -765,6 +769,7 @@
         <th>Watts</th>
         <th>Control System Cost</th>
         <th>Installation Cost</th>
+        <th>Tube Cost</th>
         <th>Change/Remove</th>
       </tr>
     </thead>
@@ -779,6 +784,7 @@
           <td>{{watts}}</td>
           <td>{{printSensorCost}}</td>
           <td>{{printInstallCost}}</td>
+          <td>{{tubeCost}}</td>
           <td>
             {{#if selectedEdit}}
               <button class="cancelEditLightInfoBtn btn btn-warning" type="button"><i class="icon-remove"></i></button>
@@ -790,8 +796,8 @@
         </tr>
       {{/each}}
       <tr class="addRow">
-        <td><input type="text" id="addLightInfoType" class="input-med" placeholder="Type"></td>
-        <td><input type="text" id="addLightInfoNew" class="input-med" placeholder="New Type"></td>
+        <td><input type="text" id="addLightInfoType" class="input-medium" placeholder="Type"></td>
+        <td><input type="text" id="addLightInfoNew" class="input-medium" placeholder="New Type"></td>
         <td><input type="text" id="addLightInfoDescription" class="input-large" placeholder="Description"></td>
         <td><input type="text" id="addLightInfoPrice" class="input-mini" placeholder="Price"></td>
         <td><input type="text" id="addLightInfoEscs" class="input-mini" placeholder="ESCs"></td>
@@ -806,6 +812,7 @@
             <option value="Standard">Standard</option>
           </select>
         </td>
+        <td><input type="text" id="addLightInfoTubeCost" class="input-mini" placeholder="Tube Cost"></td>
         {{#if editing}}
           <td><button id="addLightInfoBtn" class="btn btn-primary" type="button">Update</button></td>
         {{else}}
@@ -842,6 +849,12 @@
         <label class="control-label" for="standardSensorCost">Standard Sensor Price</label>
         <div class="controls">
           <input type="text" id="stdSensorCost" class="hiddenValueField" value="{{stdSensorCost}}">
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="maintCost">Maintenance Cost per Year</label>
+        <div class="controls">
+          <input type="text" id="maintCost" class="hiddenValueField" value="{{maintCost}}">
         </div>
       </div>
       <div class="center-align">
