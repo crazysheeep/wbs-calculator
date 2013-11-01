@@ -2,7 +2,36 @@ Projects = new Meteor.Collection('projects');
 LightInfo = new Meteor.Collection('lightinfo');
 HiddenValues = new Meteor.Collection('hiddenvalues');
 
+function pv(interest, term, fv) {
+  var r = interest / 100;
+  return fv / Math.pow(1 + r, term);
+}
 
+function fv(interest, term, pv) {
+  var r = interest / 100;
+  return pv * Math.pow(1 + r, term);
+}
+
+function pAnnuity(interest, term, payment) {
+  var result = 0;
+  for (var i = 1; i <= term; i++) {
+    result += pv(interest, i, payment);
+  }
+  return result;
+}
+
+function fAnnuity(interest, term, payment) {
+  var result = 0;
+  for (var i = 0; i < term; i++) {
+    result += fv(interest, i, payment);
+  }
+  return result;
+}
+
+function pmt(interest, term, PV) {
+  var r = interest / 100;
+  return r * PV / (1 - (1/Math.pow(1 + r, term)));
+}
 
 if (Meteor.isClient) {
   Session.setDefault('theme', 'dark'); // dark theme by default
@@ -33,7 +62,9 @@ if (Meteor.isClient) {
   };
   Template.navbar.events({
     'click #logo' : function () {
-      console.log(LightInfo.find());
+      console.log(pAnnuity(15, 5, 15));
+      console.log(fAnnuity(10, 5, 172.4));
+      console.log(pmt(1.25, 60, 262.8));
       if (Session.equals('theme', 'light')) {
         Session.set('theme', 'dark');
       } else if (Session.equals('theme', 'dark')) {
@@ -471,7 +502,9 @@ if (Meteor.isClient) {
   };
   Template.analysis.analysisCalculation = function () {
     var results = [];
-    var lights = Projects.findOne({code: Session.get('curProject')}).lightList;
+    var proj = Projects.findOne({code: Session.get('curProject')});
+    var lights = proj.lightList;
+    var values = proj.snapshotHiddenValues;
     lights.forEach( function (curLight) {
       var found = -1;
       for (var i = 0; i < results.length; i++) {
@@ -480,24 +513,80 @@ if (Meteor.isClient) {
           break;
         }
       }
+
+      var curNewLightInfo = LightInfo.findOne({type: curLight.newType});
+      var curOldLightInfo = LightInfo.findOne({type: curLight.type});
+      var type = curLight.type;
+      var newType = curLight.newType;
+      var qty = curLight.qty;
+      
       if (found == -1) {
-        var curLightInfo = LightInfo.find({type: curLight.newType});
-        var type = curLight.type;
-        var newType = curLight.newType;
-        var qty = curLight.qty;
-        //var payPerFitting = curLightInfo.payPerFitting;
-        var payPerFitting = 10;
-        var savingPerMonth = 0;
+        // Calculate payPerFitting
+        var interest = 15 // TODO values.interest?
+        var sensorCost = 0;
+        if (curNewLightInfo.sensorCost == 'Standard') {
+          sensorCost = values.stdSensorCost;
+        }
+        var labourCost = 0;
+        if (curNewLightInfo.installCost == 'Standard') {
+          labourCost = values.stdInstallCost;
+        }
+        var escDiscount = curNewLightInfo.escs * values.escPrice * 0.8;
+        var lightCost = parseFloat(curNewLightInfo.price) + parseFloat(sensorCost) + parseFloat(labourCost) - escDiscount;
+        var totalPV = lightCost + pAnnuity(interest, 5, values.maintCost);
+        var payPerFitting = pmt(interest/12, 60, totalPV);
+
+        // Calculate savingPerFitting per 5 years
+        var elecBeforeOneYear = parseInt(curOldLightInfo.watts) * curLight.hours / 1000 * parseFloat(values.elecPrice);
+        console.log(elecBeforeOneYear);
+        var elecBefore = fAnnuity(10, 5, elecBeforeOneYear);
+        var elecAfterOneYear = parseInt(curNewLightInfo.watts) * curLight.hours / 1000 * parseFloat(values.elecPrice);
+        console.log('after', elecAfterOneYear);
+        var elecAfter = fAnnuity(10, 5, elecAfterOneYear);
+
+        var oldCost = elecBefore + (parseFloat(curOldLightInfo.tubeCost) * 5) + (parseFloat(curOldLightInfo.price) / 3 * 5);
+        console.log('elecBefore ', elecBefore);
+        console.log('Tube Replacement ', parseFloat(curOldLightInfo.tubeCost) * 5);
+        console.log('Fitting Replacement ', parseFloat(curOldLightInfo.price) / 3 * 5);
+        var savingPerFitting = oldCost - elecAfter;
+
+        // Finalise and save
+        var savingPerMonth = savingPerFitting * qty / 60;
         var payPerMonth = payPerFitting * qty;
         var profitPerMonth = savingPerMonth - payPerMonth;
         results.push({type: type,
                       newType: newType,
                       qty: qty,
-                      payPerFitting: payPerFitting.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
-                      savingPerMonth: savingPerMonth.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
-                      payPerMonth: payPerMonth.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,"),
-                      profitPerMonth: profitPerMonth.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,")});
+                      payPerFitting: payPerFitting, // one time calculation
+                      savingPerFitting: savingPerFitting, //one time calculation
+                      savingPerMonth: savingPerMonth,
+                      payPerMonth: payPerMonth,
+                      profitPerMonth: profitPerMonth});
+      } else {
+        var lightToModify = results[found];
+
+        var newQty = parseInt(lightToModify.qty) + parseInt(qty);
+        var payPerFitting = lightToModify.payPerFitting;
+        var savingPerMonth = lightToModify.savingPerFitting * newQty / 60;
+        var payPerMonth = payPerFitting * newQty;
+        var profitPerMonth = savingPerMonth - payPerMonth;
+        lightToModify.qty = newQty;
+        lightToModify.savingPerMonth = savingPerMonth;
+        lightToModify.payPerMonth = payPerMonth;
+        lightToModify.profitPerMonth = profitPerMonth;
       }
+    });
+    
+    // Round numbers and put commas in
+    results.forEach(function (result) {
+      var payPerFitting = result.payPerFitting;
+      var savingPerMonth = result.savingPerMonth;
+      var payPerMonth = result.payPerMonth;
+      var profitPerMonth = result.profitPerMonth;
+      result.payPerFitting = payPerFitting.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
+      result.savingPerMonth = savingPerMonth.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
+      result.payPerMonth = payPerMonth.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
+      result.profitPerMonth = profitPerMonth.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
     });
     return results;
   };
