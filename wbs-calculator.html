@@ -743,8 +743,9 @@
       </tbody>
     </table>
     <br>
-    <div id="chart_div"></div>
-    {{> pieChart}}
+    <div id="chart_div">
+      {{> pieBeforeChart}}
+    </div>
   {{else}}
     <div class="alert">
       <strong>Error: No project currently selected.</strong>
@@ -752,7 +753,7 @@
   {{/if}}
 </template>
 
-<template name="pieChart">
+<template name="pieBeforeChart">
   <p></p>
 </template>
 

@@ -44,6 +44,9 @@ if (Meteor.isClient) {
   Session.setDefault('saveDisabled', true); //Input page, disabled by default
   Session.setDefault('saveHiddenValueDisabled', true);
 
+  Session.setDefault('pieBeforeElec', 0);
+  Session.setDefault('pieBeforeMaint', 0);
+
   Template.navbar.theme = function () {
     if (Session.equals('theme', 'dark')) {
       return "navbar-inverse";
@@ -505,6 +508,10 @@ if (Meteor.isClient) {
     var proj = Projects.findOne({code: Session.get('curProject')});
     var lights = proj.lightList;
     var values = proj.snapshotHiddenValues;
+
+    var pieBeforeElec = 0;
+    var pieBeforeMaint = 0;
+
     lights.forEach( function (curLight) {
       var found = -1;
       for (var i = 0; i < results.length; i++) {
@@ -540,6 +547,7 @@ if (Meteor.isClient) {
         var elecBeforeOneYear = parseInt(curOldLightInfo.watts) * curLight.hours / 1000 * parseFloat(values.elecPrice);
         console.log(elecBeforeOneYear);
         var elecBefore = fAnnuity(10, 5, elecBeforeOneYear);
+        pieBeforeElec += elecBefore * qty;
         var elecAfterOneYear = parseInt(curNewLightInfo.watts) * curLight.hours / 1000 * parseFloat(values.elecPrice);
         console.log('after', elecAfterOneYear);
         var elecAfter = fAnnuity(10, 5, elecAfterOneYear);
@@ -548,6 +556,7 @@ if (Meteor.isClient) {
         console.log('elecBefore ', elecBefore);
         console.log('Tube Replacement ', parseFloat(curOldLightInfo.tubeCost) * 5);
         console.log('Fitting Replacement ', parseFloat(curOldLightInfo.price) / 3 * 5);
+        pieBeforeMaint += ((parseFloat(curOldLightInfo.tubeCost) * 5) + (parseFloat(curOldLightInfo.price) / 3 * 5)) * qty;
         var savingPerFitting = oldCost - elecAfter;
 
         // Finalise and save
@@ -564,7 +573,6 @@ if (Meteor.isClient) {
                       profitPerMonth: profitPerMonth});
       } else {
         var lightToModify = results[found];
-
         var newQty = parseInt(lightToModify.qty) + parseInt(qty);
         var payPerFitting = lightToModify.payPerFitting;
         var savingPerMonth = lightToModify.savingPerFitting * newQty / 60;
@@ -588,17 +596,23 @@ if (Meteor.isClient) {
       result.payPerMonth = payPerMonth.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
       result.profitPerMonth = profitPerMonth.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
     });
+
+    Session.set('pieBeforeElec', pieBeforeElec / 60);
+    Session.set('pieBeforeMaint', pieBeforeMaint / 60);
+
     return results;
   };
 
-  Template.pieChart.rendered = function () {
+  Template.pieBeforeChart.rendered = function () {
     var self = this;
     self.node = self.find("p");
 
     // Data
     var dataset = {
-      apples: [2, 2, 2, 2, 2]
+      data: [Session.get('pieBeforeElec'), Session.get('pieBeforeMaint')]
     };
+
+    console.log(dataset.data);
 
     //Width and height
     var width = 100,
@@ -614,7 +628,7 @@ if (Meteor.isClient) {
         .sort(null);
 
       var arc = d3.svg.arc()
-          .innerRadius(radius - 20)
+          .innerRadius(0)
           .outerRadius(radius - 5);
 
       var svg = d3.select(self.node).append("svg")
@@ -624,7 +638,7 @@ if (Meteor.isClient) {
           .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
       var path = svg.selectAll("path")
-          .data(pie(dataset.apples))
+          .data(pie(dataset.data))
           .enter().append("path")
           .attr("fill", function(d, i) { return color(i); })
           .attr("d", arc);
