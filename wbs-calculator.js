@@ -555,37 +555,31 @@ if (Meteor.isClient) {
 
       // Calculate savingPerFitting per 5 years
       var elecBeforeOneYear = parseInt(curOldLightInfo.watts) * curLight.hours / 1000 * parseFloat(values.elecPrice);
-      console.log(elecBeforeOneYear);
       var elecBefore = fAnnuity(10, 5, elecBeforeOneYear);
       pieBeforeElec += elecBefore * qty;
       var elecAfterOneYear = parseInt(curNewLightInfo.watts) * curLight.hours / 1000 * parseFloat(values.elecPrice);
-      console.log('after', elecAfterOneYear);
       var elecAfter = fAnnuity(10, 5, elecAfterOneYear);
-      console.log('after x 5', elecAfter);
       pieAfterElec += elecAfter * qty;
 
       var oldCost = elecBefore + (parseFloat(curOldLightInfo.tubeCost) * 5) + (parseFloat(curOldLightInfo.price) / 3 * 5);
-      console.log('elecBefore ', elecBefore);
-      console.log('Tube Replacement ', parseFloat(curOldLightInfo.tubeCost) * 5);
-      console.log('Fitting Replacement ', parseFloat(curOldLightInfo.price) / 3 * 5);
       pieBeforeMaint += ((parseFloat(curOldLightInfo.tubeCost) * 5) + (parseFloat(curOldLightInfo.price) / 3 * 5)) * qty;
       var savingPerFitting = oldCost - elecAfter;
 
       //Finalise and save
       savingPerMonth += savingPerFitting * qty / 60;
       payPerMonth += payPerFitting * qty;
-      profitPerMonth += savingPerMonth - payPerMonth;
+      profitPerMonth = savingPerMonth - payPerMonth;
 
       if (found != -1) {
         results[found].savingPerMonth = savingPerMonth;
         results[found].payPerMonth = payPerMonth;
         results[found].profitPerMonth = profitPerMonth;
+        results[found].qty = parseInt(results[found].qty) + parseInt(qty);
       } else {
         results.push({type: type,
                       newType: newType,
                       qty: qty,
-                      payPerFitting: payPerFitting, // one time calculation
-                      savingPerFitting: savingPerFitting, //one time calculation
+                      payPerFitting: payPerFitting,
                       savingPerMonth: savingPerMonth,
                       payPerMonth: payPerMonth,
                       profitPerMonth: profitPerMonth});
@@ -631,30 +625,49 @@ if (Meteor.isClient) {
       var color = d3.scale.category10();
 
       var pie = d3.layout.pie()
-        .sort(null);
+        .value(function(d) { return d.value; });
 
       var arc = d3.svg.arc()
-          .innerRadius(0)
-          .outerRadius(radius - 5);
+        .outerRadius(radius);
 
       var svg = d3.select(node).append("svg")
-          .attr("width", width)
-          .attr("height", height)
-          .append("g")
-          .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + radius + "," + radius + ")");
 
       var path = svg.selectAll("path")
-          .data(pie(data))
-          .enter().append("path")
-          .attr("fill", function(d, i) { return color(i); })
-          .attr("d", arc);
+        .data(pie(data))
+        .enter().append("path")
+        .attr("fill", function(d, i) { return color(i); })
+        .attr("d", arc);
+
+      var legend = d3.select(node).append("svg")
+        .attr("width", 200)
+        .attr("height", 200)
+        .selectAll("g")
+        .data(data.reverse())
+        .enter().append("g")
+        .attr("transform", function(d, i) { return "translate(0," + i*24 + ")"; });
+      legend.append("rect")
+        .attr("width", 18)
+        .attr("height", 18)
+        .attr("x", 10)
+        .attr("y", 20)
+        .style("fill", function(d, i) { return color(i); });
+      legend.append("text")
+        .attr("x", 40)
+        .attr("y", 29)
+        .attr("dy", ".3em")
+        .text(function(d) { return d.label; });
       });
   };
   Template.pieBeforeChart.rendered = function () {
     var self = this;
     self.node = self.find("p");
 
-    var data = [Session.get('pieBeforeElec'), Session.get('pieBeforeMaint')];
+    var data = [{"label":"Electricity Cost", "value":Session.get('pieBeforeElec')},
+                {"label":"Maintenance Cost", "value":Session.get('pieBeforeMaint')}];
 
     console.log("Before: " + data);
 
@@ -664,7 +677,9 @@ if (Meteor.isClient) {
     var self = this;
     self.node = self.find("p");
 
-    var data = [Session.get('pieAfterElec'), Session.get('pieAfterPayment'), Session.get('pieAfterProfit')];
+    var data = [{"label":"Electricity Cost", "value":Session.get('pieBeforeElec')},
+                {"label":"Payment Per Month", "value":Session.get('pieAfterPayment')},
+                {"label":"Profit Per Month", "value":Session.get('pieAfterProfit')}];
 
     console.log("After: " + data);
 
