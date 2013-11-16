@@ -511,6 +511,7 @@ if (Meteor.isClient) {
 
     var pieBeforeElec = 0;
     var pieBeforeMaint = 0;
+    var pieAfterElec = 0;
 
     lights.forEach( function (curLight) {
       var found = -1;
@@ -526,43 +527,60 @@ if (Meteor.isClient) {
       var type = curLight.type;
       var newType = curLight.newType;
       var qty = curLight.qty;
-      
-      if (found == -1) {
-        // Calculate payPerFitting
-        var interest = 15 // TODO values.interest?
-        var sensorCost = 0;
-        if (curNewLightInfo.sensorCost == 'Standard') {
-          sensorCost = values.stdSensorCost;
-        }
-        var labourCost = 0;
-        if (curNewLightInfo.installCost == 'Standard') {
-          labourCost = values.stdInstallCost;
-        }
-        var escDiscount = curNewLightInfo.escs * values.escPrice * 0.8;
-        var lightCost = parseFloat(curNewLightInfo.price) + parseFloat(sensorCost) + parseFloat(labourCost) - escDiscount;
-        var totalPV = lightCost + pAnnuity(interest, 5, values.maintCost);
-        var payPerFitting = pmt(interest/12, 60, totalPV);
 
-        // Calculate savingPerFitting per 5 years
-        var elecBeforeOneYear = parseInt(curOldLightInfo.watts) * curLight.hours / 1000 * parseFloat(values.elecPrice);
-        console.log(elecBeforeOneYear);
-        var elecBefore = fAnnuity(10, 5, elecBeforeOneYear);
-        pieBeforeElec += elecBefore * qty;
-        var elecAfterOneYear = parseInt(curNewLightInfo.watts) * curLight.hours / 1000 * parseFloat(values.elecPrice);
-        console.log('after', elecAfterOneYear);
-        var elecAfter = fAnnuity(10, 5, elecAfterOneYear);
+      // Set initial values
+      var savingPerMonth = 0;
+      var payPerMonth = 0;
+      var profitPerMonth = 0;
+      if (found != -1) {
+        savingPerMonth = parseFloat(results[found].savingPerMonth);
+        payPerMonth = parseFloat(results[found].payPerMonth);
+        profitPerMonth = parseFloat(results[found].profitPerMonth);
+      }
 
-        var oldCost = elecBefore + (parseFloat(curOldLightInfo.tubeCost) * 5) + (parseFloat(curOldLightInfo.price) / 3 * 5);
-        console.log('elecBefore ', elecBefore);
-        console.log('Tube Replacement ', parseFloat(curOldLightInfo.tubeCost) * 5);
-        console.log('Fitting Replacement ', parseFloat(curOldLightInfo.price) / 3 * 5);
-        pieBeforeMaint += ((parseFloat(curOldLightInfo.tubeCost) * 5) + (parseFloat(curOldLightInfo.price) / 3 * 5)) * qty;
-        var savingPerFitting = oldCost - elecAfter;
+      // Calculate payPerFitting
+      var interest = 15 // TODO values.interest?
+      var sensorCost = 0;
+      if (curNewLightInfo.sensorCost == 'Standard') {
+        sensorCost = values.stdSensorCost;
+      }
+      var labourCost = 0;
+      if (curNewLightInfo.installCost == 'Standard') {
+        labourCost = values.stdInstallCost;
+      }
+      var escDiscount = curNewLightInfo.escs * values.escPrice * 0.8;
+      var lightCost = parseFloat(curNewLightInfo.price) + parseFloat(sensorCost) + parseFloat(labourCost) - escDiscount;
+      var totalPV = lightCost + pAnnuity(interest, 5, values.maintCost);
+      var payPerFitting = pmt(interest/12, 60, totalPV);
 
-        // Finalise and save
-        var savingPerMonth = savingPerFitting * qty / 60;
-        var payPerMonth = payPerFitting * qty;
-        var profitPerMonth = savingPerMonth - payPerMonth;
+      // Calculate savingPerFitting per 5 years
+      var elecBeforeOneYear = parseInt(curOldLightInfo.watts) * curLight.hours / 1000 * parseFloat(values.elecPrice);
+      console.log(elecBeforeOneYear);
+      var elecBefore = fAnnuity(10, 5, elecBeforeOneYear);
+      pieBeforeElec += elecBefore * qty;
+      var elecAfterOneYear = parseInt(curNewLightInfo.watts) * curLight.hours / 1000 * parseFloat(values.elecPrice);
+      console.log('after', elecAfterOneYear);
+      var elecAfter = fAnnuity(10, 5, elecAfterOneYear);
+      console.log('after x 5', elecAfter);
+      pieAfterElec += elecAfter * qty;
+
+      var oldCost = elecBefore + (parseFloat(curOldLightInfo.tubeCost) * 5) + (parseFloat(curOldLightInfo.price) / 3 * 5);
+      console.log('elecBefore ', elecBefore);
+      console.log('Tube Replacement ', parseFloat(curOldLightInfo.tubeCost) * 5);
+      console.log('Fitting Replacement ', parseFloat(curOldLightInfo.price) / 3 * 5);
+      pieBeforeMaint += ((parseFloat(curOldLightInfo.tubeCost) * 5) + (parseFloat(curOldLightInfo.price) / 3 * 5)) * qty;
+      var savingPerFitting = oldCost - elecAfter;
+
+      //Finalise and save
+      savingPerMonth += savingPerFitting * qty / 60;
+      payPerMonth += payPerFitting * qty;
+      profitPerMonth += savingPerMonth - payPerMonth;
+
+      if (found != -1) {
+        results[found].savingPerMonth = savingPerMonth;
+        results[found].payPerMonth = payPerMonth;
+        results[found].profitPerMonth = profitPerMonth;
+      } else {
         results.push({type: type,
                       newType: newType,
                       qty: qty,
@@ -571,17 +589,6 @@ if (Meteor.isClient) {
                       savingPerMonth: savingPerMonth,
                       payPerMonth: payPerMonth,
                       profitPerMonth: profitPerMonth});
-      } else {
-        var lightToModify = results[found];
-        var newQty = parseInt(lightToModify.qty) + parseInt(qty);
-        var payPerFitting = lightToModify.payPerFitting;
-        var savingPerMonth = lightToModify.savingPerFitting * newQty / 60;
-        var payPerMonth = payPerFitting * newQty;
-        var profitPerMonth = savingPerMonth - payPerMonth;
-        lightToModify.qty = newQty;
-        lightToModify.savingPerMonth = savingPerMonth;
-        lightToModify.payPerMonth = payPerMonth;
-        lightToModify.profitPerMonth = profitPerMonth;
       }
     });
     
@@ -597,27 +604,26 @@ if (Meteor.isClient) {
       result.profitPerMonth = profitPerMonth.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
     });
 
+    var pieAfterPayment = 0;
+    var pieAfterProfit = 0;
+    //Set the variables for the pie chart
+    results.forEach(function (result) {
+      pieAfterPayment += parseFloat(result.payPerMonth);
+      var profitPerMonth = result.profitPerMonth.replace(/,/g, '');
+      pieAfterProfit += parseFloat(profitPerMonth);
+    });
     Session.set('pieBeforeElec', pieBeforeElec / 60);
     Session.set('pieBeforeMaint', pieBeforeMaint / 60);
+    Session.set('pieAfterElec', pieAfterElec / 60);
+    Session.set('pieAfterPayment', pieAfterPayment);
+    Session.set('pieAfterProfit', pieAfterProfit);
 
     return results;
   };
 
-  Template.pieBeforeChart.rendered = function () {
-    var self = this;
-    self.node = self.find("p");
-
-    // Data
-    var dataset = {
-      data: [Session.get('pieBeforeElec'), Session.get('pieBeforeMaint')]
-    };
-
-    console.log(dataset.data);
-
-    //Width and height
-    var width = 100,
-        height = 100,
-        radius = Math.min(width, height) / 2;
+  function drawPie (width, height, node, data) {
+    //radius from width and height
+    var radius = Math.min(width, height) / 2;
 
     // render
     self.handle = Meteor.autorun(function () {
@@ -631,18 +637,38 @@ if (Meteor.isClient) {
           .innerRadius(0)
           .outerRadius(radius - 5);
 
-      var svg = d3.select(self.node).append("svg")
+      var svg = d3.select(node).append("svg")
           .attr("width", width)
           .attr("height", height)
           .append("g")
           .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
       var path = svg.selectAll("path")
-          .data(pie(dataset.data))
+          .data(pie(data))
           .enter().append("path")
           .attr("fill", function(d, i) { return color(i); })
           .attr("d", arc);
-    });
+      });
+  };
+  Template.pieBeforeChart.rendered = function () {
+    var self = this;
+    self.node = self.find("p");
+
+    var data = [Session.get('pieBeforeElec'), Session.get('pieBeforeMaint')];
+
+    console.log("Before: " + data);
+
+    drawPie(200, 200, self.node, data);
+  };
+  Template.pieAfterChart.rendered = function () {
+    var self = this;
+    self.node = self.find("p");
+
+    var data = [Session.get('pieAfterElec'), Session.get('pieAfterPayment'), Session.get('pieAfterProfit')];
+
+    console.log("After: " + data);
+
+    drawPie(200, 200, self.node, data);
   };
 
   Template.lightInfo.lights = function () {
