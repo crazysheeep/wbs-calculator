@@ -646,7 +646,7 @@ if (Meteor.isClient) {
         .attr("width", 200)
         .attr("height", 200)
         .selectAll("g")
-        .data(data.reverse())
+        .data(data)
         .enter().append("g")
         .attr("transform", function(d, i) { return "translate(0," + i*24 + ")"; });
       legend.append("rect")
@@ -669,7 +669,7 @@ if (Meteor.isClient) {
     var data = [{"label":"Electricity Cost", "value":Session.get('pieBeforeElec')},
                 {"label":"Maintenance Cost", "value":Session.get('pieBeforeMaint')}];
 
-    console.log("Before: " + data);
+    console.log("Before:", data[0].value, data[1].value);
 
     drawPie(200, 200, self.node, data);
   };
@@ -677,11 +677,11 @@ if (Meteor.isClient) {
     var self = this;
     self.node = self.find("p");
 
-    var data = [{"label":"Electricity Cost", "value":Session.get('pieBeforeElec')},
+    var data = [{"label":"Electricity Cost", "value":Session.get('pieAfterElec')},
                 {"label":"Payment Per Month", "value":Session.get('pieAfterPayment')},
                 {"label":"Profit Per Month", "value":Session.get('pieAfterProfit')}];
 
-    console.log("After: " + data);
+    console.log("After:", data[0].value, data[1].value, data[2].value);
 
     drawPie(200, 200, self.node, data);
   };
